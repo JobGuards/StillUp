@@ -1,0 +1,26 @@
+{
+  "name": "stillup",
+  "private": true,
+  "version": "1.0.0",
+  "type": "module",
+  "description": "",
+  "workspaces": [
+    "apps/*",
+    "packages/*"
+  ],
+  "scripts": {
+    "dev:api": "npm run dev --prefix apps/api",
+    "dev:web": "npm run dev --prefix apps/web",
+    "dev": "concurrently \"npm run dev:api\" \"npm run dev:web\""
+  },
+  "keywords": [],
+  "author": "pallavi",
+  "license": "ISC",
+  "dependencies": {
+    "@prisma/client": "^5.22.0",
+    "prisma": "^5.22.0"
+  },
+  "devDependencies": {
+    "concurrently": "^9.2.1"
+  }
+}
