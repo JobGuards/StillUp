@@ -1,6 +1,7 @@
 import { Request, Response, NextFunction } from 'express'
 import { verifyToken } from '../utils/jwt.js'
 import { prisma } from '@stillup/db'
+import { hashApiKey } from '../utils/apiKey.js'
 
 // Extend Express Request type to include user
 declare global {
@@ -61,6 +62,61 @@ export async function authMiddleware(
     } else {
       res.status(401).json({ error: 'Authentication failed' })
     }
+  }
+}
+
+/**
+ * Combined authentication middleware
+ * Accepts either JWT cookie or X-API-Key header
+ * Tries JWT first, falls back to API key
+ */
+export async function apiKeyOrAuthMiddleware(
+  req: Request,
+  res: Response,
+  next: NextFunction
+): Promise<void> {
+  try {
+    // Try JWT cookie first
+    const token = req.cookies?.token
+    if (token) {
+      const payload = verifyToken(token)
+      const user = await prisma.user.findUnique({
+        where: { id: payload.userId },
+        select: { id: true, email: true, fullName: true },
+      })
+      if (user) {
+        req.user = user
+        next()
+        return
+      }
+    }
+
+    // Fall back to API key
+    const apiKey = req.headers['x-api-key'] as string | undefined
+    if (apiKey) {
+      const keyHash = hashApiKey(apiKey)
+      const keyRecord = await prisma.apiKey.findUnique({
+        where: { keyHash },
+        include: {
+          user: { select: { id: true, email: true, fullName: true } },
+        },
+      })
+
+      if (keyRecord && (!keyRecord.expiresAt || keyRecord.expiresAt >= new Date())) {
+        req.user = keyRecord.user
+        // Fire-and-forget lastUsedAt update
+        prisma.apiKey.update({
+          where: { id: keyRecord.id },
+          data: { lastUsedAt: new Date() },
+        }).catch(() => {})
+        next()
+        return
+      }
+    }
+
+    res.status(401).json({ error: 'Authentication required' })
+  } catch (error) {
+    res.status(401).json({ error: 'Authentication failed' })
   }
 }
 

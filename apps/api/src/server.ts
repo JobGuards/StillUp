@@ -4,6 +4,7 @@ import dotenv from "dotenv";
 import cookieParser from "cookie-parser";
 import authRoutes from "./routes/auth.js";
 import monitorRoutes from "./routes/monitors.js";
+import apiKeyRoutes from "./routes/apiKeys.js";
 import { prisma } from '@stillup/db'
 import { calculateNextExpectedAt } from './utils/status.js'
 
@@ -108,6 +109,9 @@ export function startServer() {
 
   // Monitor routes (protected by auth middleware in routes file)
   app.use("/api/monitors", monitorRoutes);
+
+  // API key management routes (protected by JWT auth)
+  app.use("/api/keys", apiKeyRoutes);
 
   const port = process.env.PORT || 4000;
   app.listen(port, () =>

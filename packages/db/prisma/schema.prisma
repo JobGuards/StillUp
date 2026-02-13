@@ -33,6 +33,7 @@ model ApiKey {
   id          String    @id @default(uuid())
   name        String
   keyHash     String    @unique
+  keyPrefix   String
   lastUsedAt  DateTime?
   createdAt   DateTime  @default(now())
   expiresAt   DateTime?

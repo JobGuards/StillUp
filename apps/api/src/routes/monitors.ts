@@ -1,6 +1,6 @@
 import { Router, Request, Response } from 'express'
 import { prisma } from '@stillup/db'
-import { authMiddleware } from '../middleware/auth.js'
+import { apiKeyOrAuthMiddleware } from '../middleware/auth.js'
 import {
   createMonitorSchema,
   updateMonitorSchema,
@@ -11,8 +11,8 @@ import { z } from 'zod'
 
 const router = Router()
 
-// All routes require authentication
-router.use(authMiddleware)
+// All routes require authentication (JWT cookie or API key)
+router.use(apiKeyOrAuthMiddleware)
 
 /**
  * Helper function to convert interval in minutes to cron-like schedule string
