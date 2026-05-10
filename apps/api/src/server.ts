@@ -10,6 +10,7 @@ import heartbeatRoutes from "./routes/heartbeats.js";
 import analyticsRoutes from "./routes/analytics.js";
 import metricsRoutes from "./routes/metrics.js";
 import incidentRoutes from "./routes/incidents.js";
+import alertChannelRoutes from "./routes/alert-channels.js";
 import { apiRateLimiter, authRateLimiter } from "./middleware/rateLimit.js";
 import * as Sentry from "@sentry/node";
 
@@ -59,6 +60,9 @@ export function createApp() {
 
   // 11. Incident routes
   app.use("/api/incidents", incidentRoutes);
+
+  // 12. Alert Channel routes
+  app.use("/api/alert-channels", alertChannelRoutes);
 
   // Sentry Error Handler (must be after all controllers)
   Sentry.setupExpressErrorHandler(app);

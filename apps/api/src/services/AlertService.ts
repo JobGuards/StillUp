@@ -1,6 +1,8 @@
 import { prisma } from '@stillup/db'
 import { EmailAlertProvider } from './alerts/EmailAlertProvider.js'
 import { WebhookAlertProvider } from './alerts/WebhookAlertProvider.js'
+import { SlackAlertProvider } from './alerts/SlackAlertProvider.js'
+import { DiscordAlertProvider } from './alerts/DiscordAlertProvider.js'
 import { AlertProvider, AlertData } from './alerts/AlertProvider.js'
 import { decryptJSON } from '../utils/encryption.js'
 
@@ -8,6 +10,8 @@ export class AlertService {
   private providers: Record<string, AlertProvider> = {
     email: new EmailAlertProvider(),
     webhook: new WebhookAlertProvider(),
+    slack: new SlackAlertProvider(),
+    discord: new DiscordAlertProvider(),
   }
 
   /**
@@ -43,11 +47,23 @@ export class AlertService {
 
     const channels = await this.getEnabledChannels(monitor.projectId)
     
+    // Calculate downtime duration
+    const startedAt = new Date(incident.startedAt)
+    const resolvedAt = new Date(incident.resolvedAt || Date.now())
+    const durationMs = resolvedAt.getTime() - startedAt.getTime()
+    
+    const durationMinutes = Math.floor(durationMs / 60000)
+    const durationSeconds = Math.floor((durationMs % 60000) / 1000)
+    const durationText = durationMinutes > 0 
+      ? `${durationMinutes}m ${durationSeconds}s`
+      : `${durationSeconds}s`
+
     for (const channel of channels) {
       await this.sendToChannel(channel, {
         monitor,
         incident,
         type: 'resolution',
+        durationText,
       })
     }
   }
@@ -55,7 +71,7 @@ export class AlertService {
   /**
    * Send alert to a specific channel
    */
-  private async sendToChannel(channel: any, data: AlertData) {
+  private async sendToChannel(channel: any, data: AlertData & { durationText?: string }) {
     const provider = this.providers[channel.type.toLowerCase()]
     
     if (!provider) {
