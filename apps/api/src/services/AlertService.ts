@@ -2,6 +2,7 @@ import { prisma } from '@stillup/db'
 import { EmailAlertProvider } from './alerts/EmailAlertProvider.js'
 import { WebhookAlertProvider } from './alerts/WebhookAlertProvider.js'
 import { AlertProvider, AlertData } from './alerts/AlertProvider.js'
+import { decryptJSON } from '../utils/encryption.js'
 
 export class AlertService {
   private providers: Record<string, AlertProvider> = {
@@ -72,7 +73,12 @@ export class AlertService {
     })
 
     try {
-      await provider.sendAlert(channel.config, data)
+      // Decrypt config before sending
+      const decryptedConfig = typeof channel.config === 'string' 
+        ? decryptJSON(channel.config) 
+        : channel.config
+
+      await provider.sendAlert(decryptedConfig, data)
       
       // Update Alert record on success
       await (prisma.alert as any).update({
@@ -100,12 +106,18 @@ export class AlertService {
    * Get all enabled alert channels for a project
    */
   private async getEnabledChannels(projectId: string) {
-    return (prisma.alertChannel as any).findMany({
+    const channels = await (prisma.alertChannel as any).findMany({
       where: {
         projectId,
         enabled: true,
       },
     })
+
+    // Decrypt configs
+    return channels.map((c: any) => ({
+      ...c,
+      config: typeof c.config === 'string' ? decryptJSON(c.config) : c.config
+    }))
   }
 }
 

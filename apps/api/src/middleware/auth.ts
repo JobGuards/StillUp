@@ -13,7 +13,66 @@ declare global {
       }
       project?: {
         id: string
+        role: 'OWNER' | 'ADMIN' | 'MEMBER'
       }
+    }
+  }
+}
+
+/**
+ * Project Access Middleware
+ * Ensures the user has access to a specific project and has the required role
+ */
+export function projectAccessMiddleware(requiredRole: 'OWNER' | 'ADMIN' | 'MEMBER' = 'MEMBER') {
+  return async (req: Request, res: Response, next: NextFunction): Promise<void> => {
+    try {
+      if (!req.user) {
+        res.status(401).json({ error: 'Authentication required' })
+        return
+      }
+
+      // Project ID can be in params, query, or body
+      const projectId = req.params.projectId || req.query.projectId || req.body.projectId
+
+      if (!projectId || typeof projectId !== 'string') {
+        res.status(400).json({ error: 'Project ID is required' })
+        return
+      }
+
+      const membership = await (prisma.projectMember as any).findUnique({
+        where: {
+          projectId_userId: {
+            projectId,
+            userId: req.user.id,
+          },
+        },
+      })
+
+      if (!membership) {
+        res.status(403).json({ error: 'You do not have access to this project' })
+        return
+      }
+
+      // Role hierarchy: OWNER > ADMIN > MEMBER
+      const roles = ['MEMBER', 'ADMIN', 'OWNER']
+      const userRoleIndex = roles.indexOf(membership.role)
+      const requiredRoleIndex = roles.indexOf(requiredRole)
+
+      if (userRoleIndex < requiredRoleIndex) {
+        res.status(403).json({ error: `Insufficient permissions. Required role: ${requiredRole}` })
+        return
+      }
+
+      // Attach project and role to request
+      req.project = {
+        id: projectId,
+        role: membership.role as any,
+      }
+
+      next()
+    } catch (error) {
+      console.error('Project Access error:', error)
+      res.status(500).json({ error: 'Internal server error' })
     }
   }
 }

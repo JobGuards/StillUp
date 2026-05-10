@@ -8,36 +8,50 @@ import { startOfDay, startOfWeek, subDays } from 'date-fns'
  * 1. Aggregate heartbeats into daily/weekly ExecutionSummary records
  * 2. Clean up heartbeat records older than 30 days
  */
+let isDbConnected = true
+
 export async function runAnalyticsAggregation(): Promise<void> {
   const yesterday = subDays(new Date(), 1)
   const dayStart = startOfDay(yesterday)
 
-  console.log(`[AnalyticsWorker] Aggregating for ${dayStart.toISOString()}`)
+  try {
+    console.log(`[AnalyticsWorker] Aggregating for ${dayStart.toISOString()}`)
 
-  // Get all enabled monitors
-  const monitors = await (prisma as any).monitor.findMany({
-    where: { enabled: true, deletedAt: null },
-    select: { id: true },
-  })
+    // Get all enabled monitors
+    const monitors = await (prisma as any).monitor.findMany({
+      where: { enabled: true, deletedAt: null },
+      select: { id: true },
+    })
 
-  for (const monitor of monitors) {
-    await aggregateDailySummary(monitor.id, dayStart)
-  }
+    if (!isDbConnected) {
+      console.log('[AnalyticsWorker] Database connection restored')
+      isDbConnected = true
+    }
 
-  // Weekly summary every Monday
-  if (yesterday.getDay() === 0) {
-    const weekStart = startOfWeek(yesterday, { weekStartsOn: 1 })
     for (const monitor of monitors) {
-      await aggregateWeeklySummary(monitor.id, weekStart)
+      await aggregateDailySummary(monitor.id, dayStart)
+    }
+
+    // Weekly summary every Monday
+    if (yesterday.getDay() === 0) {
+      const weekStart = startOfWeek(yesterday, { weekStartsOn: 1 })
+      for (const monitor of monitors) {
+        await aggregateWeeklySummary(monitor.id, weekStart)
+      }
+    }
+
+    // Cleanup: delete heartbeats older than 30 days
+    const cutoff = subDays(new Date(), 30)
+    const deleted = await (prisma as any).heartbeat.deleteMany({
+      where: { receivedAt: { lt: cutoff } },
+    })
+    console.log(`[AnalyticsWorker] Cleaned up ${deleted.count} old records`)
+  } catch (error: any) {
+    if (isDbConnected) {
+      console.error('[AnalyticsWorker] Connection error:', error.message || error)
+      isDbConnected = false
     }
   }
-
-  // Cleanup: delete heartbeats older than 30 days (soft-deleted or not)
-  const cutoff = subDays(new Date(), 30)
-  const deleted = await (prisma as any).heartbeat.deleteMany({
-    where: { receivedAt: { lt: cutoff } },
-  })
-  console.log(`[AnalyticsWorker] Cleaned up ${deleted.count} old heartbeat records`)
 }
 
 async function aggregateDailySummary(monitorId: string, date: Date): Promise<void> {

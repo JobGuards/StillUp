@@ -1,8 +1,9 @@
 import { Router } from 'express'
-import { apiKeyMiddleware } from '../middleware/auth.js'
+import { authMiddleware, projectAccessMiddleware } from '../middleware/auth.js'
 import { createMonitorSchema, updateMonitorSchema } from '../validators/monitor.js'
 import { monitorRepository } from '../repositories/MonitorRepository.js'
 import { getNextExpectedDate } from '../utils/scheduleParser.js'
+import { auditService } from '../services/AuditService.js'
 
 const router = Router()
 
@@ -10,7 +11,7 @@ const router = Router()
  * POST /api/monitors
  * Create a new monitor
  */
-router.post('/', apiKeyMiddleware, async (req, res) => {
+router.post('/', authMiddleware, projectAccessMiddleware('ADMIN'), async (req, res) => {
   try {
     // 1. Validate request body
     const validation = createMonitorSchema.safeParse(req.body)
@@ -45,9 +46,12 @@ router.post('/', apiKeyMiddleware, async (req, res) => {
     // Update with nextExpectedAt (or we could have added it to the repo create method)
     // For now, let's update it here to keep it simple as requested
     const updatedMonitor = await monitorRepository.update(monitor.id, project.id, {
-        // @ts-ignore - Repository update type might need adjustment for this internal field
+        // @ts-ignore
         nextExpectedAt
     })
+
+    // Log the action
+    await auditService.logMonitorAction('MONITOR_CREATE', updatedMonitor, req.user!.id)
 
     res.status(201).json(updatedMonitor)
   } catch (error) {
@@ -64,7 +68,7 @@ router.post('/', apiKeyMiddleware, async (req, res) => {
  * GET /api/monitors
  * List all monitors for the project
  */
-router.get('/', apiKeyMiddleware, async (req, res) => {
+router.get('/', authMiddleware, projectAccessMiddleware('MEMBER'), async (req, res) => {
   try {
     const { project } = req
     if (!project) {
@@ -84,7 +88,7 @@ router.get('/', apiKeyMiddleware, async (req, res) => {
  * GET /api/monitors/:id
  * Get a specific monitor
  */
-router.get('/:id', apiKeyMiddleware, async (req, res) => {
+router.get('/:id', authMiddleware, projectAccessMiddleware('MEMBER'), async (req, res) => {
   try {
     const { project } = req
     if (!project) {
@@ -109,7 +113,7 @@ router.get('/:id', apiKeyMiddleware, async (req, res) => {
  * PUT /api/monitors/:id
  * Update a monitor
  */
-router.put('/:id', apiKeyMiddleware, async (req, res) => {
+router.put('/:id', authMiddleware, projectAccessMiddleware('ADMIN'), async (req, res) => {
   try {
     const validation = updateMonitorSchema.safeParse(req.body)
     if (!validation.success) {
@@ -146,6 +150,9 @@ router.put('/:id', apiKeyMiddleware, async (req, res) => {
       return
     }
 
+    // Log the action
+    await auditService.logMonitorAction('MONITOR_UPDATE', monitor, req.user!.id, { changes: Object.keys(updateData) })
+
     res.json(monitor)
   } catch (error) {
     console.error('Update monitor error:', error)
@@ -157,7 +164,7 @@ router.put('/:id', apiKeyMiddleware, async (req, res) => {
  * DELETE /api/monitors/:id
  * Soft-delete a monitor
  */
-router.delete('/:id', apiKeyMiddleware, async (req, res) => {
+router.delete('/:id', authMiddleware, projectAccessMiddleware('ADMIN'), async (req, res) => {
   try {
     const { project } = req
     if (!project) {
@@ -170,6 +177,9 @@ router.delete('/:id', apiKeyMiddleware, async (req, res) => {
       res.status(404).json({ error: 'Monitor not found or unauthorized' })
       return
     }
+
+    // Log the action
+    await auditService.logMonitorAction('MONITOR_DELETE', monitor, req.user!.id)
 
     res.json({ message: 'Monitor deleted successfully' })
   } catch (error) {

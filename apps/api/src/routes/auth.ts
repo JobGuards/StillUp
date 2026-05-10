@@ -4,6 +4,8 @@ import { hashPassword, comparePassword } from '../utils/password.js'
 import { generateToken } from '../utils/jwt.js'
 import { signupSchema, signinSchema } from '../validators/auth.js'
 import { authMiddleware } from '../middleware/auth.js'
+import { auditService } from '../services/AuditService.js'
+import { ProjectRole } from '@stillup/db'
 import { z } from 'zod'
 
 const router = Router()
@@ -57,11 +59,31 @@ router.post('/signup', async (req: Request, res: Response): Promise<void> => {
       const project = await tx.project.create({
         data: {
           name: projectName,
+        },
+      })
+
+      // Create membership (Owner)
+      await (tx.projectMember as any).create({
+        data: {
+          projectId: project.id,
           userId: user.id,
+          role: ProjectRole.OWNER,
         },
       })
 
       return { user, project }
+    })
+
+    // Log the signup
+    await auditService.log({
+      userId: result.user.id,
+      projectId: result.project.id,
+      action: 'USER_LOGIN', // First login
+      resourceType: 'USER',
+      resourceId: result.user.id,
+      ipAddress: req.ip,
+      userAgent: req.get('user-agent'),
+      metadata: { method: 'signup' }
     })
 
     // Generate JWT token
@@ -118,7 +140,9 @@ router.post('/signin', async (req: Request, res: Response): Promise<void> => {
     const user = await prisma.user.findUnique({
       where: { email: validatedData.email },
       include: {
-        projects: true,
+        projectMembers: {
+          include: { project: true }
+        },
       },
     })
 
@@ -144,6 +168,17 @@ router.post('/signin', async (req: Request, res: Response): Promise<void> => {
       email: user.email!,
     })
 
+    // Log the signin
+    await auditService.log({
+      userId: user.id,
+      action: 'USER_LOGIN',
+      resourceType: 'USER',
+      resourceId: user.id,
+      ipAddress: req.ip,
+      userAgent: req.get('user-agent'),
+      metadata: { method: 'password' }
+    })
+
     // Set httpOnly cookie
     res.cookie('token', token, {
       httpOnly: true,
@@ -160,9 +195,10 @@ router.post('/signin', async (req: Request, res: Response): Promise<void> => {
         fullName: user.name,
         emailVerified: user.emailVerified,
       },
-      projects: user.projects.map((p) => ({
-        id: p.id,
-        name: p.name,
+      projects: user.projectMembers.map((m) => ({
+        id: m.project.id,
+        name: m.project.name,
+        role: m.role,
       })),
     })
   } catch (error) {
@@ -183,7 +219,17 @@ router.post('/signin', async (req: Request, res: Response): Promise<void> => {
  * POST /api/auth/signout
  * Sign out and clear session
  */
-router.post('/signout', (req: Request, res: Response): void => {
+router.post('/signout', authMiddleware, async (req: Request, res: Response): Promise<void> => {
+  if (req.user) {
+    await auditService.log({
+      userId: req.user.id,
+      action: 'USER_LOGOUT',
+      resourceType: 'USER',
+      resourceId: req.user.id,
+      ipAddress: req.ip,
+      userAgent: req.get('user-agent'),
+    })
+  }
   res.clearCookie('token')
   res.json({ message: 'Signed out successfully' })
 })
@@ -202,11 +248,13 @@ router.get(
         return
       }
 
-      // Fetch user with projects
+      // Fetch user with projects via memberships
       const user = await prisma.user.findUnique({
         where: { id: req.user.id },
         include: {
-          projects: true,
+          projectMembers: {
+            include: { project: true }
+          },
         },
       })
 
@@ -222,9 +270,10 @@ router.get(
           fullName: user.name,
           emailVerified: user.emailVerified,
         },
-        projects: user.projects.map((p) => ({
-          id: p.id,
-          name: p.name,
+        projects: user.projectMembers.map((m) => ({
+          id: m.project.id,
+          name: m.project.name,
+          role: m.role,
         })),
       })
     } catch (error) {

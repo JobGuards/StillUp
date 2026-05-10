@@ -21,21 +21,61 @@ model User {
   updatedAt     DateTime  @updatedAt
   accounts      Account[]
   sessions      Session[]
-  projects      Project[]
+  projectMembers ProjectMember[]
 
   @@index([email])
 }
 
 model Project {
   id            String         @id @default(cuid())
-  userId        String
   name          String
   createdAt     DateTime       @default(now())
   updatedAt     DateTime       @updatedAt
-  user          User           @relation(fields: [userId], references: [id])
+  members       ProjectMember[]
   monitors      Monitor[]
   apiKeys       ApiKey[]
   alertChannels AlertChannel[]
+  auditLogs     AuditLog[]
+}
+
+enum ProjectRole {
+  OWNER
+  ADMIN
+  MEMBER
+}
+
+model ProjectMember {
+  id        String      @id @default(cuid())
+  projectId String
+  userId    String
+  role      ProjectRole @default(MEMBER)
+  createdAt DateTime    @default(now())
+  updatedAt DateTime    @updatedAt
+
+  project Project @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  user    User    @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([projectId, userId])
+  @@index([userId])
+}
+
+model AuditLog {
+  id           String   @id @default(cuid())
+  action       String   // e.g., "MONITOR_CREATE", "PROJECT_DELETE", "LOGIN"
+  resourceType String   // e.g., "MONITOR", "PROJECT", "USER"
+  resourceId   String?
+  userId       String?
+  projectId    String?
+  metadata     Json?    // Store old/new values or extra context
+  ipAddress    String?
+  userAgent    String?
+  createdAt    DateTime @default(now())
+
+  project Project? @relation(fields: [projectId], references: [id])
+
+  @@index([userId])
+  @@index([projectId])
+  @@index([action])
 }
 
 model ApiKey {

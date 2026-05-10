@@ -1,6 +1,8 @@
 import { prisma, MonitorStatus } from '@stillup/db'
 import { incidentService } from '../services/IncidentService.js'
 
+let isDbConnected = true
+
 /**
  * Checks for monitors that have missed their expected heartbeats
  */
@@ -20,13 +22,16 @@ async function checkMissedHeartbeats() {
       },
     })
 
+    if (!isDbConnected) {
+      console.log('[Worker] Database connection restored')
+      isDbConnected = true
+    }
+
     if (missedMonitors.length === 0) return
 
     console.log(`[Worker] Found ${missedMonitors.length} monitors with missed heartbeats`)
 
     // 2. Mark them as DOWN
-    // For now we do it one by one to potentially trigger alerts in the future
-    // In a high-traffic system, a single updateMany might be better
     for (const monitor of missedMonitors) {
       await (prisma.monitor as any).update({
         where: { id: monitor.id },
@@ -38,10 +43,13 @@ async function checkMissedHeartbeats() {
       // Create incident
       await incidentService.createIncident(monitor.id, 'missed')
       
-      console.log(`[Worker] Monitor ${monitor.name} (${monitor.id}) marked as DOWN and incident created due to missed heartbeat`)
+      console.log(`[Worker] Monitor ${monitor.name} (${monitor.id}) marked as DOWN and incident created`)
     }
-  } catch (error) {
-    console.error('[Worker] Error checking missed heartbeats:', error)
+  } catch (error: any) {
+    if (isDbConnected) {
+      console.error('[Worker] Connection error - stopping log spam until restored:', error.message || error)
+      isDbConnected = false
+    }
   }
 }
 
