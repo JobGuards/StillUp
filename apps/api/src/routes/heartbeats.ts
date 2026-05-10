@@ -4,6 +4,8 @@ import { heartbeatRepository } from '../repositories/HeartbeatRepository.js'
 import { getNextExpectedDate } from '../utils/scheduleParser.js'
 import { heartbeatRateLimiter } from '../middleware/rateLimit.js'
 import { incidentService } from '../services/IncidentService.js'
+import { healthScoreService } from '../services/HealthScoreService.js'
+import { patternDetectionService } from '../services/PatternDetectionService.js'
 
 const router = Router()
 
@@ -73,6 +75,12 @@ const handleHeartbeat = async (req: any, res: any) => {
     })
 
     res.json({ status: 'ok', nextExpectedAt })
+
+    // Async: update health score and run pattern detection (non-blocking)
+    setImmediate(() => {
+      healthScoreService.calculateAndUpdate(monitor.id).catch(console.error)
+      patternDetectionService.analyzeMonitor(monitor.id).catch(console.error)
+    })
   } catch (error) {
     console.error('Heartbeat ingestion error:', error)
     res.status(500).json({ error: 'Internal server error' })

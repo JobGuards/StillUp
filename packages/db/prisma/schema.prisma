@@ -131,8 +131,10 @@ model Monitor {
   projectId  String
   project    Project  @relation(fields: [projectId], references: [id], onDelete: Restrict)
 
-  heartbeats      Heartbeat[]
-  incidents       Incident[]
+  heartbeats         Heartbeat[]
+  incidents          Incident[]
+  executionSummaries ExecutionSummary[]
+  failurePatterns    FailurePattern[]
 
   @@index([nextExpectedAt])
   @@index([heartbeatToken])
@@ -178,21 +180,25 @@ model Heartbeat {
 // =============================================================================
 
 model Incident {
-  id              String    @id @default(cuid())
-  monitorId       String
-  type            String    // "missed", "failed", "late"
-  startedAt       DateTime  @default(now())
-  resolvedAt      DateTime?
-  autoResolved    Boolean   @default(false)
-  resolutionNotes String?   @db.Text
-  alertsSent      Int       @default(0)
+  id                 String    @id @default(cuid())
+  monitorId          String
+  type               String    // "missed", "failed", "late"
+  startedAt          DateTime  @default(now())
+  resolvedAt         DateTime?
+  autoResolved       Boolean   @default(false)
+  resolutionNotes    String?   @db.Text
+  resolutionCategory String?   // "disk_space" | "permissions" | "network" | "credentials" | "other"
+  alertsSent         Int       @default(0)
+  groupId            String?
 
-  monitor         Monitor   @relation(fields: [monitorId], references: [id])
+  monitor         Monitor        @relation(fields: [monitorId], references: [id])
+  group           IncidentGroup? @relation(fields: [groupId], references: [id])
   heartbeats      Heartbeat[]
   alerts          Alert[]
 
   @@index([monitorId, startedAt])
   @@index([resolvedAt])
+  @@index([groupId])
 }
 
 // =============================================================================
@@ -225,4 +231,68 @@ model Alert {
   channel         AlertChannel @relation(fields: [channelId], references: [id])
 
   @@index([incidentId])
+}
+
+// =============================================================================
+// 9. ANALYTICS (Phase 4)
+// =============================================================================
+
+model ExecutionSummary {
+  id              String   @id @default(cuid())
+  monitorId       String
+  date            DateTime // start of day/week (UTC midnight)
+  period          String   // "daily" | "weekly"
+  totalHeartbeats Int      @default(0)
+  successCount    Int      @default(0)
+  failureCount    Int      @default(0)
+  lateCount       Int      @default(0)
+  avgDuration     Float?
+  uptimePercent   Float?   // 0-100
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+
+  monitor Monitor @relation(fields: [monitorId], references: [id])
+
+  @@unique([monitorId, date, period])
+  @@index([monitorId, date])
+}
+
+// =============================================================================
+// 10. FAILURE PATTERNS (Phase 4)
+// =============================================================================
+
+model FailurePattern {
+  id          String   @id @default(cuid())
+  monitorId   String
+  type        String   // "time_based" | "duration_anomaly" | "streak" | "degradation"
+  description String   @db.Text
+  confidence  Float    // 0-1
+  metadata    Json?    // e.g. {"hour": 2, "dayOfWeek": 1} for time-based
+  firstSeenAt DateTime @default(now())
+  lastSeenAt  DateTime @default(now())
+  occurrences Int      @default(1)
+  active      Boolean  @default(true)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  monitor Monitor @relation(fields: [monitorId], references: [id])
+
+  @@index([monitorId, type])
+  @@index([monitorId, active])
+}
+
+// =============================================================================
+// 11. INCIDENT GROUPING (Phase 4)
+// =============================================================================
+
+model IncidentGroup {
+  id          String     @id @default(cuid())
+  title       String
+  description String?    @db.Text
+  patternType String?    // "cascade" | "time_based" | "recurring"
+  createdAt   DateTime   @default(now())
+  resolvedAt  DateTime?
+  incidents   Incident[]
+
+  @@index([createdAt])
 }

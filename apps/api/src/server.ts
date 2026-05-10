@@ -2,17 +2,29 @@ import express from "express";
 import cors from "cors";
 import dotenv from "dotenv";
 import cookieParser from "cookie-parser";
+import helmet from "helmet";
+import { requestLogger } from "./middleware/requestLogger.js";
 import authRoutes from "./routes/auth.js";
 import monitorRoutes from "./routes/monitors.js";
 import heartbeatRoutes from "./routes/heartbeats.js";
+import analyticsRoutes from "./routes/analytics.js";
+import metricsRoutes from "./routes/metrics.js";
+import incidentRoutes from "./routes/incidents.js";
 import { apiRateLimiter, authRateLimiter } from "./middleware/rateLimit.js";
+import * as Sentry from "@sentry/node";
 
 dotenv.config();
 
 export function createApp() {
   const app = express();
 
-  // CORS configuration - allow credentials for httpOnly cookies
+  // 1. Security Headers
+  app.use(helmet());
+
+  // 2. Request Logging
+  app.use(requestLogger);
+
+  // 3. CORS configuration - allow credentials for httpOnly cookies
   app.use(
     cors({
       origin: process.env.FRONTEND_URL || "http://localhost:3000",
@@ -20,26 +32,36 @@ export function createApp() {
     })
   );
 
-  // Body parsing and cookie parsing
-  app.use(express.json());
+  // 4. Body parsing and cookie parsing
+  app.use(express.json({ limit: "10kb" })); // Request size limit
   app.use(cookieParser());
 
-  // Global API rate limiting
+  // 5. Global API rate limiting
   app.use("/api", apiRateLimiter);
 
-  // Health check endpoint
+  // 6. Metrics and Health check
+  app.use("/metrics", metricsRoutes);
   app.get("/health", (_, res) => {
     res.json({ status: "still up" });
   });
 
-  // Auth routes with stricter rate limiting
+  // 7. Auth routes with stricter rate limiting
   app.use("/api/auth", authRateLimiter, authRoutes);
 
-  // Monitor routes
+  // 8. Monitor routes
   app.use("/api/monitors", monitorRoutes);
 
-  // Heartbeat ingestion (simplified URL for easier integration)
+  // 9. Heartbeat ingestion (simplified URL for easier integration)
   app.use("/hb", heartbeatRoutes);
+
+  // 10. Analytics routes
+  app.use("/api/analytics", analyticsRoutes);
+
+  // 11. Incident routes
+  app.use("/api/incidents", incidentRoutes);
+
+  // Sentry Error Handler (must be after all controllers)
+  Sentry.setupExpressErrorHandler(app);
 
   return app;
 }

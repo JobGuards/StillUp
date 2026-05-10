@@ -8,6 +8,7 @@ import {
   LayoutDashboard, 
   Settings, 
   AlertTriangle,
+  BarChart2,
   LogOut,
   ChevronRight,
   MoreHorizontal
@@ -38,7 +39,7 @@ import { useAuth } from '@/contexts/AuthContext'
 const items = [
   {
     title: 'Dashboard',
-    url: '/',
+    url: '/dashboard',
     icon: LayoutDashboard,
   },
   {
@@ -50,6 +51,11 @@ const items = [
     title: 'Incidents',
     url: '/incidents',
     icon: AlertTriangle,
+  },
+  {
+    title: 'Analytics',
+    url: '/analytics',
+    icon: BarChart2,
   },
   {
     title: 'Settings',

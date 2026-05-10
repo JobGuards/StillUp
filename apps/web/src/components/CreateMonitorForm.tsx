@@ -34,7 +34,7 @@ export function CreateMonitorForm() {
   const [isSubmitting, setIsSubmitting] = useState(false)
 
   const form = useForm<CreateMonitorInput>({
-    resolver: zodResolver(createMonitorSchema),
+    resolver: zodResolver(createMonitorSchema as any),
     defaultValues: {
       name: '',
       description: '',

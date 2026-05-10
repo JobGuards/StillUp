@@ -40,41 +40,34 @@ router.post('/signup', async (req: Request, res: Response): Promise<void> => {
     // Hash password
     const passwordHash = await hashPassword(validatedData.password)
 
-    // Create user and organization in a transaction
+    // Create user and project in a transaction
     const result = await prisma.$transaction(async (tx) => {
       // Create user
       const user = await tx.user.create({
         data: {
           email: validatedData.email,
           passwordHash,
-          fullName: validatedData.fullName,
+          name: validatedData.fullName,
         },
       })
 
-      // Create personal organization
-      const orgName = `${validatedData.fullName}'s Organization`
-      const orgSlug = createSlug(orgName) + '-' + user.id.substring(0, 8)
+      // Create primary project
+      const projectName = `${validatedData.fullName}'s Project`
 
-      const organization = await tx.organization.create({
+      const project = await tx.project.create({
         data: {
-          name: orgName,
-          slug: orgSlug,
-          members: {
-            create: {
-              userId: user.id,
-              role: 'OWNER',
-            },
-          },
+          name: projectName,
+          userId: user.id,
         },
       })
 
-      return { user, organization }
+      return { user, project }
     })
 
     // Generate JWT token
     const token = generateToken({
       userId: result.user.id,
-      email: result.user.email,
+      email: result.user.email!,
     })
 
     // Set httpOnly cookie
@@ -90,20 +83,19 @@ router.post('/signup', async (req: Request, res: Response): Promise<void> => {
       user: {
         id: result.user.id,
         email: result.user.email,
-        fullName: result.user.fullName,
+        fullName: result.user.name,
         emailVerified: result.user.emailVerified,
       },
-      organization: {
-        id: result.organization.id,
-        name: result.organization.name,
-        slug: result.organization.slug,
+      project: {
+        id: result.project.id,
+        name: result.project.name,
       },
     })
   } catch (error) {
     if (error instanceof z.ZodError) {
       res.status(400).json({
         error: 'Validation failed',
-        details: error.errors,
+        details: (error as any).errors,
       })
       return
     }
@@ -126,11 +118,7 @@ router.post('/signin', async (req: Request, res: Response): Promise<void> => {
     const user = await prisma.user.findUnique({
       where: { email: validatedData.email },
       include: {
-        memberships: {
-          include: {
-            organization: true,
-          },
-        },
+        projects: true,
       },
     })
 
@@ -142,7 +130,7 @@ router.post('/signin', async (req: Request, res: Response): Promise<void> => {
     // Compare password
     const isPasswordValid = await comparePassword(
       validatedData.password,
-      user.passwordHash
+      user.passwordHash || ''
     )
 
     if (!isPasswordValid) {
@@ -153,7 +141,7 @@ router.post('/signin', async (req: Request, res: Response): Promise<void> => {
     // Generate JWT token
     const token = generateToken({
       userId: user.id,
-      email: user.email,
+      email: user.email!,
     })
 
     // Set httpOnly cookie
@@ -164,26 +152,24 @@ router.post('/signin', async (req: Request, res: Response): Promise<void> => {
       maxAge: 7 * 24 * 60 * 60 * 1000, // 7 days
     })
 
-    // Return user data with organizations
+    // Return user data with projects
     res.json({
       user: {
         id: user.id,
         email: user.email,
-        fullName: user.fullName,
+        fullName: user.name,
         emailVerified: user.emailVerified,
       },
-      organizations: user.memberships.map((m) => ({
-        id: m.organization.id,
-        name: m.organization.name,
-        slug: m.organization.slug,
-        role: m.role,
+      projects: user.projects.map((p) => ({
+        id: p.id,
+        name: p.name,
       })),
     })
   } catch (error) {
     if (error instanceof z.ZodError) {
       res.status(400).json({
         error: 'Validation failed',
-        details: error.errors,
+        details: (error as any).errors,
       })
       return
     }
@@ -216,15 +202,11 @@ router.get(
         return
       }
 
-      // Fetch user with organizations
+      // Fetch user with projects
       const user = await prisma.user.findUnique({
         where: { id: req.user.id },
         include: {
-          memberships: {
-            include: {
-              organization: true,
-            },
-          },
+          projects: true,
         },
       })
 
@@ -237,14 +219,12 @@ router.get(
         user: {
           id: user.id,
           email: user.email,
-          fullName: user.fullName,
+          fullName: user.name,
           emailVerified: user.emailVerified,
         },
-        organizations: user.memberships.map((m) => ({
-          id: m.organization.id,
-          name: m.organization.name,
-          slug: m.organization.slug,
-          role: m.role,
+        projects: user.projects.map((p) => ({
+          id: p.id,
+          name: p.name,
         })),
       })
     } catch (error) {

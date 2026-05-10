@@ -45,7 +45,7 @@ export async function authMiddleware(
       select: {
         id: true,
         email: true,
-        fullName: true,
+        name: true,
       },
     })
 
@@ -55,7 +55,7 @@ export async function authMiddleware(
     }
 
     // Attach user to request
-    req.user = user
+    req.user = { id: user.id, email: user.email!, fullName: user.name }
 
     next()
   } catch (error) {
@@ -86,12 +86,12 @@ export async function optionalAuthMiddleware(
         select: {
           id: true,
           email: true,
-          fullName: true,
+          name: true,
         },
       })
 
       if (user) {
-        req.user = user
+        req.user = { id: user.id, email: user.email!, fullName: user.name }
       }
     }
 

@@ -56,6 +56,14 @@ class ApiClient {
   async getIncidents(): Promise<any[]> {
     return this.fetch<any[]>('/incidents')
   }
+
+  // Analytics/Activity methods
+  async getActivity(projectId: string): Promise<any> {
+    const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:4000'}/api/analytics/heartbeats/recent?projectId=${projectId}`, {
+      credentials: 'include',
+    })
+    return response.json()
+  }
 }
 
 export const api = new ApiClient()
