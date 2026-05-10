@@ -45,10 +45,7 @@ export default function LandingPage() {
   ];
 
   return (
-    <>
-      <link href="https://fonts.googleapis.com/css2?family=Geist:wght@400;600;700;900&family=JetBrains+Mono:wght@400;500;700&display=swap" rel="stylesheet" />
-
-      <div className="font-body-md text-body-md antialiased min-h-screen flex flex-col relative bg-background bg-tech-grid overflow-x-hidden text-on-surface z-0">
+    <div className="antialiased min-h-screen flex flex-col relative bg-background bg-tech-grid overflow-x-hidden text-foreground z-0">
         {/* Dynamic Background Elements */}
         <div className="radial-glow-hero"></div>
         <div className="absolute inset-0 overflow-hidden pointer-events-none opacity-50">
@@ -231,9 +228,8 @@ export default function LandingPage() {
             ))}
           </div>
         </section>
+        
+        <Footer />
       </div>
-
-      <Footer />
-    </>
-  );
-}
+    );
+  }

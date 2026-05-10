@@ -34,7 +34,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
   const fetchUser = async () => {
     try {
-      const response = await fetch('http://localhost:4000/api/auth/me', {
+      const apiBase = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:4040'
+      const response = await fetch(`${apiBase}/api/auth/me`, {
         credentials: 'include', // Important: send cookies
       })
 
@@ -57,7 +58,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
   const signout = async () => {
     try {
-      await fetch('http://localhost:4000/api/auth/signout', {
+      const apiBase = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:4040'
+      await fetch(`${apiBase}/api/auth/signout`, {
         method: 'POST',
         credentials: 'include',
       })

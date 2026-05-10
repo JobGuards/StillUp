@@ -1,6 +1,6 @@
 import { MonitorResponse, CreateMonitorInput, UpdateMonitorInput } from '@stillup/shared'
 
-const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:4000/api'
+const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:4040/api'
 
 class ApiClient {
   private async fetch<T>(endpoint: string, options: RequestInit = {}): Promise<T> {

@@ -26,16 +26,26 @@ model User {
   @@index([email])
 }
 
+enum Plan {
+  FREE
+  PRO
+  ENTERPRISE
+}
+
 model Project {
-  id            String         @id @default(cuid())
-  name          String
-  createdAt     DateTime       @default(now())
-  updatedAt     DateTime       @updatedAt
-  members       ProjectMember[]
-  monitors      Monitor[]
-  apiKeys       ApiKey[]
-  alertChannels AlertChannel[]
-  auditLogs     AuditLog[]
+  id               String         @id @default(cuid())
+  name             String
+  plan             Plan           @default(FREE)
+  stripeCustomerId String?
+  publicSlug       String?        @unique
+  isPublic         Boolean        @default(false)
+  createdAt        DateTime       @default(now())
+  updatedAt        DateTime       @updatedAt
+  members          ProjectMember[]
+  monitors         Monitor[]
+  apiKeys          ApiKey[]
+  alertChannels    AlertChannel[]
+  auditLogs        AuditLog[]
 }
 
 enum ProjectRole {
@@ -151,8 +161,9 @@ model Monitor {
   graceSeconds    Int           @default(300)
   timezone        String        @default("UTC")
   status          MonitorStatus @default(UP)
-  heartbeatToken  String        @unique
-  enabled         Boolean       @default(true)
+  heartbeatToken   String        @unique
+  enabled          Boolean       @default(true)
+  publicVisibility Boolean       @default(false)
 
   lastHeartbeatAt DateTime?
   nextExpectedAt  DateTime?

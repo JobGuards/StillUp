@@ -11,6 +11,8 @@ import analyticsRoutes from "./routes/analytics.js";
 import metricsRoutes from "./routes/metrics.js";
 import incidentRoutes from "./routes/incidents.js";
 import alertChannelRoutes from "./routes/alert-channels.js";
+import publicRoutes from "./routes/public.js";
+import stripeRoutes from "./routes/stripe.js";
 import { apiRateLimiter, authRateLimiter } from "./middleware/rateLimit.js";
 import * as Sentry from "@sentry/node";
 
@@ -63,6 +65,12 @@ export function createApp() {
 
   // 12. Alert Channel routes
   app.use("/api/alert-channels", alertChannelRoutes);
+
+  // 13. Public routes (No Auth)
+  app.use("/api/public", publicRoutes);
+
+  // 14. Billing routes
+  app.use("/api/stripe", stripeRoutes);
 
   // Sentry Error Handler (must be after all controllers)
   Sentry.setupExpressErrorHandler(app);

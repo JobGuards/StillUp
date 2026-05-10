@@ -71,8 +71,8 @@
 }
 
 @theme inline {
-  --font-sans: 'Geist', 'Geist Fallback';
-  --font-mono: 'Geist Mono', 'Geist Mono Fallback';
+  --font-inter: var(--font-inter);
+  --font-outfit: var(--font-outfit);
   
   --color-background: var(--background);
   --color-foreground: var(--foreground);
@@ -100,6 +100,8 @@
   --radius-md: calc(var(--radius) - 2px);
   --radius-lg: var(--radius);
   --radius-xl: calc(var(--radius) + 4px);
+  --radius-2xl: 1.5rem;
+  --radius-3xl: 2.5rem;
 
   --spacing-margin: 2rem;
   --spacing-xl: 4rem;
@@ -114,7 +116,10 @@
     @apply border-border outline-ring/50;
   }
   body {
-    @apply bg-background text-foreground antialiased selection:bg-acid-lime/30;
+    @apply bg-background text-foreground antialiased font-inter selection:bg-acid-lime/30;
+  }
+  h1, h2, h3, h4, h5, h6 {
+    @apply font-outfit tracking-tighter uppercase italic;
   }
 }
 
