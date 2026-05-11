@@ -13,6 +13,7 @@ import incidentRoutes from "./routes/incidents.js";
 import alertChannelRoutes from "./routes/alert-channels.js";
 import publicRoutes from "./routes/public.js";
 import stripeRoutes from "./routes/stripe.js";
+import guardRoutes from "./routes/guards.js";
 import { apiRateLimiter, authRateLimiter } from "./middleware/rateLimit.js";
 import * as Sentry from "@sentry/node";
 
@@ -71,6 +72,9 @@ export function createApp() {
 
   // 14. Billing routes
   app.use("/api/stripe", stripeRoutes);
+
+  // 15. ReplayGuard routes
+  app.use("/api/guards", guardRoutes);
 
   // Sentry Error Handler (must be after all controllers)
   Sentry.setupExpressErrorHandler(app);

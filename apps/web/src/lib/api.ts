@@ -64,6 +64,15 @@ class ApiClient {
     })
     return response.json()
   }
+
+  // ReplayGuard methods
+  async getGuardedExecutions(): Promise<any[]> {
+    return this.fetch<any[]>('/guards')
+  }
+
+  async getGuardedExecution(id: string): Promise<any> {
+    return this.fetch<any>(`/guards/${id}`)
+  }
 }
 
 export const api = new ApiClient()

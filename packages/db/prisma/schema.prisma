@@ -194,6 +194,7 @@ model Monitor {
   incidents          Incident[]
   executionSummaries ExecutionSummary[]
   failurePatterns    FailurePattern[]
+  guardExecutions    GuardExecution[]
 
   @@index([nextExpectedAt])
   @@index([heartbeatToken])
@@ -356,4 +357,42 @@ model IncidentGroup {
   incidents   Incident[]
 
   @@index([createdAt])
+}
+
+// =============================================================================
+// 12. REPLAYGUARD
+// =============================================================================
+
+model GuardExecution {
+  id              String    @id @default(cuid())
+  monitorId       String
+  externalId      String?   // User's job ID
+  attempt         Int       @default(1)
+  status          String    @default("RUNNING") // "RUNNING", "SUCCESS", "FAILED"
+  payloadHash     String?
+  environmentHash String?
+  startedAt       DateTime  @default(now())
+  finishedAt      DateTime?
+
+  monitor         Monitor           @relation(fields: [monitorId], references: [id])
+  sideEffects     GuardSideEffect[]
+
+  @@index([monitorId, status])
+  @@index([externalId])
+}
+
+model GuardSideEffect {
+  id              String    @id @default(cuid())
+  executionId     String
+  type            String    // "HTTP", "DB", "EMAIL", etc.
+  fingerprint     String    @unique
+  target          String?   // URL, Table Name, Email
+  inputHash       String    // Hash of the arguments/payload
+  status          String    @default("COMPLETED")
+  executedAt      DateTime  @default(now())
+  metadata        Json?
+
+  execution       GuardExecution @relation(fields: [executionId], references: [id])
+
+  @@index([executionId, fingerprint])
 }

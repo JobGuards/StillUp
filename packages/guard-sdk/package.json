@@ -1,0 +1,21 @@
+{
+  "name": "@stillup/guard-sdk",
+  "version": "1.0.0",
+  "description": "ReplayGuard SDK for StillUp",
+  "type": "module",
+  "main": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "exports": {
+    ".": "./src/index.ts"
+  },
+  "scripts": {
+    "build": "tsc",
+    "dev": "tsc -w"
+  },
+  "dependencies": {
+    "object-hash": "^3.0.0"
+  },
+  "devDependencies": {
+    "typescript": "^5.6.3"
+  }
+}
