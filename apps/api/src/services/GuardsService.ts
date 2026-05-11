@@ -76,6 +76,22 @@ export class GuardsService {
       });
 
       if (priorEffect) {
+        // Record that we skipped this in the current execution for visibility
+        await prisma.guardSideEffect.create({
+          data: {
+            executionId,
+            fingerprint,
+            type,
+            target,
+            inputHash,
+            status: "SKIPPED",
+            metadata: { 
+              originalExecutionId: priorEffect.executionId,
+              message: "Bypassed via Execution Memory"
+            }
+          },
+        });
+
         return { 
           action: "SKIP", 
           cachedResult: priorEffect.metadata || { message: "Already executed successfully" } 

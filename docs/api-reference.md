@@ -71,6 +71,18 @@ Returns the last 24 hours of heartbeat status for grid visualization.
 
 ---
 
+## ReplayGuard™ API
+
+### Initialize Session
+`POST /api/guards/session`
+Starts a new idempotent job execution.
+
+### Verify Side Effect
+`POST /api/guards/verify`
+Checks if a specific operation (e.g., payment) has already been performed in a previous retry.
+
+---
+
 ## Error Handling
 
 StillUp uses standard HTTP status codes:

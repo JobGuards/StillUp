@@ -146,6 +146,14 @@ export class ReplayGuard {
 
     return await operation();
   }
+
+  /**
+   * High-level AI/LLM wrapper for expensive model calls.
+   * Automatically handles fingerprinting of model parameters.
+   */
+  async ai<T>(model: string, params: any, operation: () => Promise<T>): Promise<T> {
+    return this.wrap('AI_GENERATION', model, params, operation);
+  }
 }
 
 /**

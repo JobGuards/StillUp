@@ -59,7 +59,11 @@ export default function GuardsPage() {
             </div>
           ) : (
             executions.map((exe) => (
-              <div key={exe.id} className="p-6 hover:bg-foreground/[0.02] transition-all group cursor-pointer">
+              <Link 
+                key={exe.id} 
+                href={`/dashboard/guards/${exe.id}`}
+                className="p-6 hover:bg-foreground/[0.02] transition-all group cursor-pointer block"
+              >
                 <div className="flex items-center justify-between">
                   <div className="flex items-center gap-4">
                     <div className={`p-3 rounded-2xl border ${
@@ -91,7 +95,7 @@ export default function GuardsPage() {
                     <ArrowRight className="w-5 h-5 text-muted-foreground group-hover:translate-x-1 group-hover:text-acid-lime transition-all" />
                   </div>
                 </div>
-              </div>
+              </Link>
             ))
           )}
         </div>

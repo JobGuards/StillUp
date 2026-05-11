@@ -4,6 +4,7 @@ import { Outfit, Inter } from 'next/font/google'
 import { Analytics } from '@vercel/analytics/next'
 import { AuthProvider } from '@/contexts/AuthContext'
 import { ThemeProvider } from '@/components/ThemeProvider'
+import { Toaster } from 'sonner'
 import './globals.css'
 
 const outfit = Outfit({ 
@@ -32,6 +33,7 @@ export default function RootLayout({
         <ThemeProvider attribute="class" defaultTheme="dark" enableSystem>
           <AuthProvider>
             {children}
+            <Toaster position="top-right" theme="dark" richColors />
             <Analytics />
           </AuthProvider>
         </ThemeProvider>
