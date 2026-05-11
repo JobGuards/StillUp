@@ -1,6 +1,7 @@
 'use client'
 
 import { useEffect, useState } from 'react'
+import Link from 'next/link'
 import { api } from '@/lib/api'
 import { ShieldCheck, ArrowRight, CheckCircle2, XCircle, Clock, AlertCircle } from 'lucide-react'
 import { format } from 'date-fns'
@@ -52,9 +53,9 @@ export default function GuardsPage() {
                 <h3 className="font-bold text-foreground">No guarded executions detected</h3>
                 <p className="text-sm text-muted-foreground ">Integrate the @stillup/guard-sdk into your background jobs to enable replay safety.</p>
               </div>
-              <button className="bg-foreground text-background px-6 py-2 rounded-full text-[10px] font-black uppercase tracking-widest hover:opacity-90 transition-all">
+              <Link href="/docs/replay-guard" className="bg-foreground text-background px-6 py-2 rounded-full text-[10px] font-black uppercase tracking-widest hover:opacity-90 transition-all">
                 View SDK Docs
-              </button>
+              </Link>
             </div>
           ) : (
             executions.map((exe) => (

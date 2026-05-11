@@ -5,7 +5,7 @@ import Link from 'next/link'
 import { usePathname } from 'next/navigation'
 import { ModeToggle } from '@/components/ModeToggle'
 import { Logo } from '@/components/Logo'
-import { Zap, Shield, Terminal, BookOpen, ChevronRight, Lock, ShieldAlert } from 'lucide-react'
+import { Zap, Shield, Terminal, BookOpen, ChevronRight, Lock, ShieldAlert, ShieldCheck } from 'lucide-react'
 
 interface DocLayoutProps {
   children: React.ReactNode
@@ -30,6 +30,7 @@ export function DocLayout({ children, title, subtitle, category }: DocLayoutProp
       items: [
         { title: 'Tunnel Monitoring', href: '/docs/tunnel-monitoring', icon: <Lock className="w-4 h-4" /> },
         { title: 'Security Sentinel', href: '/docs/security-sentinel', icon: <ShieldAlert className="w-4 h-4" /> },
+        { title: 'ReplayGuard SDK', href: '/docs/replay-guard', icon: <ShieldCheck className="w-4 h-4" /> },
       ]
     },
     {
