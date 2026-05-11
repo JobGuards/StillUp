@@ -1,3 +1,5 @@
+'use client'
+
 import useSWR from 'swr'
 import { api } from '@/lib/api'
 import { Activity, Plus, LayoutGrid, List } from 'lucide-react'
@@ -15,9 +17,9 @@ export function MonitorList() {
 
   if (isLoading) {
     return (
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-10">
         {[1, 2, 3].map((i) => (
-          <div key={i} className="h-64 rounded-[2.5rem] bg-foreground/[0.03] animate-pulse border border-border/5" />
+          <div key={i} className="h-64 rounded-[3rem] bg-foreground/[0.03] animate-pulse border border-border/5" />
         ))}
       </div>
     )
@@ -25,27 +27,28 @@ export function MonitorList() {
 
   if (error) {
     return (
-      <div className="flex h-64 flex-col items-center justify-center rounded-[2.5rem] border border-destructive/20 bg-destructive/5 p-8 text-center">
-        <h3 className="text-xl font-black uppercase italic text-destructive">Connection Lost</h3>
-        <p className="text-sm text-destructive/70 mt-2">Failed to sync with the intelligence engine.</p>
+      <div className="flex h-64 flex-col items-center justify-center rounded-[3rem] border border-destructive/20 bg-destructive/5 p-8 text-center backdrop-blur-xl">
+        <h3 className="text-xl font-black uppercase italic text-destructive">Sync Interrupted</h3>
+        <p className="text-sm text-destructive/70 mt-2 font-medium">Failed to establish connection with the intelligence node.</p>
       </div>
     )
   }
 
   if (!monitors || monitors.length === 0) {
     return (
-      <div className="flex h-[400px] flex-col items-center justify-center rounded-[3rem] border-2 border-dashed border-border/10 bg-foreground/[0.01] p-8 text-center group hover:border-acid-lime/20 transition-all duration-500">
-        <div className="w-20 h-20 rounded-3xl bg-foreground/[0.03] flex items-center justify-center mb-8 group-hover:scale-110 transition-transform">
-          <Activity className="h-10 w-10 text-muted-foreground opacity-20" />
+      <div className="flex h-[450px] flex-col items-center justify-center rounded-[3.5rem] border-2 border-dashed border-border/10 bg-foreground/[0.01] p-12 text-center group hover:border-acid-lime/20 transition-all duration-700">
+        <div className="w-24 h-24 rounded-[2.5rem] bg-foreground/[0.03] flex items-center justify-center mb-10 group-hover:scale-110 transition-transform relative overflow-hidden">
+          <div className="absolute inset-0 bg-acid-lime/5 opacity-0 group-hover:opacity-100 transition-opacity" />
+          <Activity className="h-10 w-10 text-muted-foreground opacity-20 relative z-10" />
         </div>
-        <h3 className="text-2xl font-black uppercase tracking-tighter italic">Silence detected</h3>
-        <p className="mb-10 text-sm text-muted-foreground max-w-sm mt-4">
-          Your infrastructure is currently invisible. Deploy your first heartbeat or secure tunnel monitor to begin.
+        <h3 className="text-3xl font-black uppercase tracking-tighter italic">Infrastructure Offline</h3>
+        <p className="mb-12 text-muted-foreground max-w-sm mt-4 font-medium leading-relaxed">
+          Your fleet is currently invisible. Deploy your first heartbeat sentinel or secure network tunnel to begin observability.
         </p>
         <Link href="/monitors/new">
-          <Button size="lg" className="rounded-2xl h-14 px-10 shadow-2xl shadow-acid-lime/20">
-            <Plus className="w-4 h-4 mr-2" />
-            Deploy First Monitor
+          <Button size="lg" className="rounded-2xl h-16 px-12 bg-acid-lime text-primary-foreground shadow-2xl shadow-acid-lime/20 hover:shadow-acid-lime/40 transition-all font-black uppercase tracking-widest text-xs">
+            <Plus className="w-4 h-4 mr-3" />
+            Deploy First Sentinel
           </Button>
         </Link>
       </div>
@@ -53,24 +56,14 @@ export function MonitorList() {
   }
 
   return (
-    <div className="space-y-10">
-      <div className="flex items-center justify-between">
-        <h2 className="text-[10px] font-black uppercase tracking-[0.3em] text-acid-lime">Active Observability ({monitors.length})</h2>
-        <div className="flex items-center gap-2 p-1 rounded-xl bg-foreground/[0.03] border border-border/5">
-          <Button variant="ghost" size="icon" className="w-8 h-8 rounded-lg bg-background shadow-sm"><LayoutGrid className="w-4 h-4" /></Button>
-          <Button variant="ghost" size="icon" className="w-8 h-8 rounded-lg text-muted-foreground"><List className="w-4 h-4" /></Button>
-        </div>
-      </div>
-
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-        {monitors.map((monitor: any) => (
-          monitor.type === 'TUNNEL' ? (
-            <TunnelStatusCard key={monitor.id} monitor={monitor} />
-          ) : (
-            <HeartbeatMonitorCard key={monitor.id} monitor={monitor} />
-          )
-        ))}
-      </div>
+    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-10">
+      {monitors.map((monitor: any) => (
+        monitor.type === 'TUNNEL' ? (
+          <TunnelStatusCard key={monitor.id} monitor={monitor} />
+        ) : (
+          <HeartbeatMonitorCard key={monitor.id} monitor={monitor} />
+        )
+      ))}
     </div>
   )
 }

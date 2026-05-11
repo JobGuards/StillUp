@@ -17,7 +17,7 @@ export function HealthScoreBadge({ score }: { score: number | null | undefined }
   }
 
   return (
-    <div className={`px-3 py-1 rounded-full border text-[10px] font-black uppercase tracking-widest ${color}`}>
+    <div className={`px-4 py-1.5 rounded-xl border text-[9px] font-black uppercase tracking-[0.2em] italic ${color} shadow-sm`}>
       {label} {Math.round(safeScore)}%
     </div>
   )

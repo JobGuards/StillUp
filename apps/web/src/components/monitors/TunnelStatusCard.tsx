@@ -25,16 +25,20 @@ export function TunnelStatusCard({ monitor }: TunnelStatusCardProps) {
   const isSlow = monitor.lastHeartbeat?.latency && monitor.lastHeartbeat.latency > 1000
 
   return (
-    <div className="glass-panel border border-border/10 rounded-3xl p-8 bg-card/5 hover:border-acid-lime/30 transition-all group">
-      <div className="flex flex-col sm:flex-row justify-between items-start gap-6">
-        <div className="space-y-4 flex-1">
-          <div className="flex items-center gap-3">
-            <div className={`p-2 rounded-xl border ${monitor.status === 'UP' ? 'bg-acid-lime/10 border-acid-lime/20 text-acid-lime' : 'bg-destructive/10 border-destructive/20 text-destructive'}`}>
-              <Shield className="w-5 h-5" />
+    <div className="glass-panel border border-border/10 rounded-[2.5rem] p-10 bg-card/5 hover:border-acid-lime/30 transition-all group relative overflow-hidden">
+      <div className="absolute top-0 right-0 p-8 opacity-[0.03] group-hover:scale-110 transition-transform duration-700">
+        <Shield className="w-24 h-24 text-acid-lime" />
+      </div>
+
+      <div className="flex flex-col sm:flex-row justify-between items-start gap-8 relative z-10">
+        <div className="space-y-6 flex-1">
+          <div className="flex items-center gap-4">
+            <div className={`w-12 h-12 rounded-2xl flex items-center justify-center border shadow-lg ${monitor.status === 'UP' ? 'bg-acid-lime/10 border-acid-lime/20 text-acid-lime shadow-acid-lime/5' : 'bg-destructive/10 border-destructive/20 text-destructive shadow-destructive/5'}`}>
+              <Shield className="w-6 h-6" />
             </div>
             <div>
-              <h3 className="text-xl font-black uppercase tracking-tight italic">{monitor.name}</h3>
-              <p className="text-[10px] font-bold text-muted-foreground uppercase tracking-widest">Secure Tunnel (WireGuard)</p>
+              <h3 className="text-2xl font-black uppercase tracking-tighter italic leading-none">{monitor.name}</h3>
+              <p className="text-[10px] font-black text-muted-foreground/40 uppercase tracking-[0.2em] mt-2 italic">Secure Tunnel (WireGuard)</p>
             </div>
           </div>
 

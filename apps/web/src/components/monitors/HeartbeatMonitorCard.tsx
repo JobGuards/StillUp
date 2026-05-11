@@ -28,11 +28,11 @@ export function HeartbeatMonitorCard({ monitor }: MonitorCardProps) {
           </div>
           <div>
             <Link href={`/monitors/${monitor.id}`}>
-              <h3 className="text-xl font-black uppercase tracking-tight italic group-hover:text-acid-lime transition-colors">{monitor.name}</h3>
+              <h3 className="text-2xl font-black uppercase tracking-tighter italic group-hover:text-acid-lime transition-colors leading-none">{monitor.name}</h3>
             </Link>
-            <div className="flex items-center gap-2 mt-1">
-               <Clock className="w-3 h-3 text-muted-foreground" />
-               <span className="text-[10px] font-bold text-muted-foreground uppercase tracking-widest">{monitor.schedule}</span>
+            <div className="flex items-center gap-2 mt-2">
+               <Clock className="w-3 h-3 text-muted-foreground/60" />
+               <span className="text-[10px] font-black text-muted-foreground/40 uppercase tracking-[0.2em] italic">{monitor.schedule}</span>
             </div>
           </div>
         </div>

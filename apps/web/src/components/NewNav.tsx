@@ -3,7 +3,6 @@
 import Link from "next/link";
 import { useState } from "react";
 import { Logo } from "./Logo";
-import { NavActions } from "./NavActions";
 import { ModeToggle } from "./ModeToggle";
 
 type Props = {
@@ -14,30 +13,31 @@ export function NewNav({ userEmail }: Props) {
   const [isProfileOpen, setIsProfileOpen] = useState(false);
 
   return (
-    <header className="fixed mt-4 left-1/2 -translate-x-1/2 w-[calc(100%-2*theme(spacing.margin))] z-50 flex justify-between items-center px-md py-sm max-w-[1600px] mx-auto glass-panel rounded-full border border-border/10 backdrop-blur-xl transition-all duration-300">
-      <Logo />
-      <nav className="hidden md:flex gap-md">
-        <Link className="text-acid-lime font-bold tracking-wider hover:glow-lime transition-all duration-300 relative group" href="/dashboard">
+    <header className="fixed top-6 left-1/2 -translate-x-1/2 w-full max-w-5xl z-50 px-2 py-2 glass-panel bg-background/40 backdrop-blur-2xl border border-border/10 rounded-[2rem] shadow-2xl shadow-black/50 flex justify-between items-center transition-all duration-500 hover:bg-background/60 hover:border-border/20">
+      <div className="pl-4">
+        <Logo />
+      </div>
+      
+      {/* Central Navigation Pill */}
+      <nav className="hidden md:flex items-center gap-1 bg-foreground/[0.03] border border-border/5 p-1 rounded-full">
+        <Link className="px-5 py-2 rounded-full text-sm font-bold text-acid-lime bg-acid-lime/[0.08] hover:bg-acid-lime/[0.15] border border-acid-lime/20 shadow-[0_0_15px_rgba(var(--theme-lime-rgb),0.1)] transition-all duration-300 tracking-widest uppercase text-[10px]" href="/dashboard">
           Dashboard
-          <span className="absolute -bottom-1 left-0 w-full h-px bg-acid-lime scale-x-100 transition-transform duration-300"></span>
         </Link>
-        <Link className="text-on-surface-variant font-body-md hover:text-on-surface hover:tracking-widest transition-all duration-300 relative group" href="/docs">
+        <Link className="px-5 py-2 rounded-full text-sm font-bold text-muted-foreground hover:text-foreground hover:bg-foreground/[0.05] transition-all duration-300 tracking-widest uppercase text-[10px]" href="/docs">
           Docs
-          <span className="absolute -bottom-1 left-0 w-full h-px bg-primary scale-x-0 group-hover:scale-x-100 transition-transform duration-300"></span>
         </Link>
-        <Link className="text-on-surface-variant font-body-md hover:text-on-surface hover:tracking-widest transition-all duration-300 relative group" href="/pricing">
+        <Link className="px-5 py-2 rounded-full text-sm font-bold text-muted-foreground hover:text-foreground hover:bg-foreground/[0.05] transition-all duration-300 tracking-widest uppercase text-[10px]" href="/pricing">
           Pricing
-          <span className="absolute -bottom-1 left-0 w-full h-px bg-primary scale-x-0 group-hover:scale-x-100 transition-transform duration-300"></span>
         </Link>
       </nav>
-      <div className="flex items-center gap-sm relative">
+
+      <div className="flex items-center gap-2 pr-2 relative">
         <ModeToggle />
-        <NavActions />
         {userEmail ? (
           <div className="relative">
             <button 
               onClick={() => setIsProfileOpen(!isProfileOpen)}
-              className="relative group focus:outline-none flex items-center justify-center"
+              className="relative group focus:outline-none flex items-center justify-center ml-2"
             >
               <div className={`w-10 h-10 rounded-full bg-surface-container-high border ${isProfileOpen ? 'border-acid-lime/50 ring-2 ring-acid-lime/20' : 'border-outline-variant/50'} flex items-center justify-center overflow-hidden hover:border-acid-lime/50 transition-colors duration-300 ring-2 ring-transparent hover:ring-acid-lime/20`}>
                 <span className="material-symbols-outlined text-on-surface text-lg">person</span>
@@ -46,17 +46,17 @@ export function NewNav({ userEmail }: Props) {
             </button>
             
             {isProfileOpen && (
-              <div className="absolute right-0 mt-3 p-4 glass-panel rounded-xl border border-outline-variant/30 flex flex-col items-end min-w-[240px] shadow-2xl z-50">
-                <span className="text-on-surface-variant text-[10px] font-code-md opacity-60 uppercase tracking-tighter mb-1">Verified User</span>
-                <span className="text-on-surface text-label-sm font-label-sm mb-4">{userEmail}</span>
-                <Link href="/dashboard" className="w-full text-center bg-surface-container hover:bg-surface-container-highest transition-colors text-on-surface py-2 rounded-lg text-sm border border-outline-variant/20">
-                  Open Dashboard
+              <div className="absolute right-0 mt-4 p-4 glass-panel rounded-2xl border border-outline-variant/30 flex flex-col items-end min-w-[240px] shadow-2xl z-50 bg-background/90 backdrop-blur-xl">
+                <span className="text-muted-foreground text-[10px] font-bold opacity-60 uppercase tracking-widest mb-2">Verified Sentinel</span>
+                <span className="text-foreground text-sm font-bold mb-4">{userEmail}</span>
+                <Link href="/dashboard" className="w-full text-center bg-acid-lime/10 hover:bg-acid-lime/20 text-acid-lime font-bold tracking-widest uppercase text-[10px] py-3 rounded-xl border border-acid-lime/20 transition-colors">
+                  Open Hub
                 </Link>
               </div>
             )}
           </div>
         ) : (
-          <Link href="/auth/signin" className="bg-surface-container-high px-4 py-2 rounded-full text-sm hover:bg-surface-container-highest transition-colors">
+          <Link href="/auth/signin" className="ml-2 bg-foreground text-background px-6 py-2.5 rounded-full text-[10px] font-black uppercase tracking-widest hover:opacity-90 hover:scale-105 transition-all duration-300">
             Sign in
           </Link>
         )}

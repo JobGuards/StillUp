@@ -1,7 +1,7 @@
 <div align="center">
   <img src="https://raw.githubusercontent.com/stillup/brand/main/logo.png" alt="StillUp Logo" width="200" />
   <h1>STILLUP</h1>
-  <p><strong>Intelligence-Driven Heartbeat Monitoring for Modern Infrastructure</strong></p>
+  <p><strong>The High-Fidelity Infrastructure Sentinel for Modern DevOps</strong></p>
   
   [![License: AGPL-3.0](https://img.shields.io/badge/License-AGPL--3.0-acidlime.svg)](LICENSE)
   [![Version](https://img.shields.io/badge/version-1.0.0--alpha-blue.svg)]()
@@ -12,16 +12,16 @@
 
 ## ⚡ The Monitor That Thinks
 
-StillUp is more than an uptime checker. It's a security-hardened intelligence engine that understands your system's heartbeat patterns. Built for developers who demand robustness, security, and a premium visual experience.
+StillUp is more than an uptime checker. It's a security-hardened **Infrastructure Sentinel** that understands your system's heartbeat patterns and secure tunnel telemetries. Built for engineers who demand robust safety audits, real-time observability, and a premium visual experience.
 
 ### ✨ Key Features
 
-- 🧠 **Intelligence Engine**: Real-time **Health Scores** and automatic **Failure Pattern Detection**.
-- 🔐 **Hardened Security**: Enterprise-grade RBAC, Audit Logging, and AES-256-GCM secret encryption at rest.
-- 🎨 **Premium UI**: Glassmorphic dashboard with real-time pulse grids and acid-lime visuals.
-- 🚀 **Multi-Channel Alerts**: Rich notifications for Slack (Block Kit), Discord (Embeds), and Email.
-- 📊 **Public Status Pages**: Share your system's reliability with beautiful, public-facing health dashboards.
-- ⚡ **Resilient Workers**: High-performance background processing with built-in database connection safety.
+- 🛡️ **Secure Tunnel Monitoring**: Real-time handshake tracking and latency metrics for encrypted networks (WireGuard, SSH, OpenVPN). Detect silent failures before they break your access.
+- 🧠 **Cryptographic Memory**: We track every handshake, key rotation, and heartbeat. Identify trends in network degradation and past resolution patterns.
+- 🔐 **Hardened Security Vault**: Enterprise-grade RBAC, Audit Logging, and AES-256-GCM secret encryption at rest. Track certificate validity and key age.
+- 🎨 **Sentinel Hub UI**: A premium, glassmorphic command center with a dynamic 'Control Center' grid, real-time pulse visualizations, and acid-lime aesthetics.
+- 🚀 **Instant Alerting**: Deep-linked, context-rich alerts dispatched via Slack (Block Kit), Discord (Embeds), and custom webhooks in milliseconds.
+- 📊 **Zero-Agent Telemetry**: Monitor crons and backups globally by simply appending a curl to your scripts. No invasive agents required.
 
 ## 🚀 Quick Start
 
