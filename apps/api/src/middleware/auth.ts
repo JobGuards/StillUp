@@ -78,6 +78,68 @@ export function projectAccessMiddleware(requiredRole: 'OWNER' | 'ADMIN' | 'MEMBE
 }
 
 /**
+ * Monitor Access Middleware
+ * Ensures the user has access to the project that owns the monitor
+ */
+export function monitorAccessMiddleware(requiredRole: 'OWNER' | 'ADMIN' | 'MEMBER' = 'MEMBER') {
+  return async (req: Request, res: Response, next: NextFunction): Promise<void> => {
+    try {
+      if (!req.user) {
+        res.status(401).json({ error: 'Authentication required' })
+        return
+      }
+
+      const { monitorId } = req.params
+      if (!monitorId) {
+        res.status(400).json({ error: 'Monitor ID is required' })
+        return
+      }
+
+      // Find the monitor and its project
+      const monitor = await (prisma.monitor as any).findUnique({
+        where: { id: monitorId },
+        select: { projectId: true },
+      })
+
+      if (!monitor) {
+        res.status(404).json({ error: 'Monitor not found' })
+        return
+      }
+
+      // Check membership
+      const membership = await (prisma.projectMember as any).findUnique({
+        where: {
+          projectId_userId: {
+            projectId: monitor.projectId,
+            userId: req.user.id,
+          },
+        },
+      })
+
+      if (!membership) {
+        res.status(403).json({ error: 'You do not have access to this monitor' })
+        return
+      }
+
+      // Role hierarchy check
+      const roles = ['MEMBER', 'ADMIN', 'OWNER']
+      const userRoleIndex = roles.indexOf(membership.role)
+      const requiredRoleIndex = roles.indexOf(requiredRole)
+
+      if (userRoleIndex < requiredRoleIndex) {
+        res.status(403).json({ error: `Insufficient permissions. Required role: ${requiredRole}` })
+        return
+      }
+
+      next()
+    } catch (error) {
+      console.error('Monitor Access error:', error)
+      res.status(500).json({ error: 'Internal server error' })
+    }
+  }
+}
+
+/**
  * JWT Authentication middleware
  * Verifies JWT token from httpOnly cookie and attaches user to request
  */

@@ -7,7 +7,10 @@ import Link from 'next/link'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
-import { Save, Loader2, Check, AlertCircle } from 'lucide-react'
+import { Save, Loader2, Check, AlertCircle, Key, Plus, Trash2, Copy, ShieldCheck } from 'lucide-react'
+import { toast } from "sonner"
+import useSWR from 'swr'
+import { api } from "@/lib/api"
 
 export default function Settings() {
   const [fullName, setFullName] = useState('John Doe')
@@ -66,6 +69,54 @@ export default function Settings() {
       setError('Failed to change password')
     } finally {
       setIsLoading(false)
+    }
+  }
+
+  // API Keys Logic
+  const { data: apiKeys, mutate: mutateKeys } = useSWR('/api-keys', () => 
+    fetch(`${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:4000'}/api/api-keys`, { credentials: 'include' }).then(r => r.json())
+  )
+  const [newKeyName, setNewKeyName] = useState('')
+  const [isCreatingKey, setIsCreatingKey] = useState(false)
+
+  const handleCreateKey = async (e: React.FormEvent) => {
+    e.preventDefault()
+    if (!newKeyName) return
+    setIsCreatingKey(true)
+    try {
+      const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:4000'}/api/api-keys`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ name: newKeyName }),
+        credentials: 'include'
+      })
+      if (!res.ok) throw new Error('Failed to create key')
+      const newKey = await res.json()
+      toast.success('API Key created successfully')
+      setNewKeyName('')
+      mutateKeys()
+      
+      navigator.clipboard.writeText(newKey.key)
+      toast.info('API Key copied to clipboard! Keep it safe.')
+    } catch (err) {
+      toast.error('Failed to create API key')
+    } finally {
+      setIsCreatingKey(false)
+    }
+  }
+
+  const handleDeleteKey = async (id: string) => {
+    if (!confirm('Are you sure you want to revoke this API key? Systems using this key will lose access.')) return
+    try {
+      const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:4000'}/api/api-keys/${id}`, {
+        method: 'DELETE',
+        credentials: 'include'
+      })
+      if (!res.ok) throw new Error('Failed to delete key')
+      toast.success('API Key revoked')
+      mutateKeys()
+    } catch (err) {
+      toast.error('Failed to revoke API key')
     }
   }
 
@@ -215,6 +266,81 @@ export default function Settings() {
               )}
             </Button>
           </form>
+        </div>
+
+        {/* API Keys Section */}
+        <div className="glass-panel border border-border/10 rounded-2xl p-8 mb-8 shadow-xl bg-card/10">
+          <div className="flex items-center justify-between mb-8">
+            <div>
+              <h2 className="text-xl font-black text-foreground uppercase tracking-tight flex items-center gap-3">
+                <Key className="w-5 h-5 text-acid-lime" /> API Keys
+              </h2>
+              <p className="text-xs text-muted-foreground mt-1 font-medium">Use these keys to authenticate with the StillUp CLI and ReplayGuard SDK.</p>
+            </div>
+          </div>
+
+          <form onSubmit={handleCreateKey} className="flex gap-4 mb-10">
+            <Input 
+              placeholder="Key Name (e.g., Production Server)" 
+              value={newKeyName}
+              onChange={(e) => setNewKeyName(e.target.value)}
+              className="bg-background/30 border-border/10 h-12 rounded-xl"
+            />
+            <Button type="submit" disabled={isCreatingKey || !newKeyName} className="bg-acid-lime text-primary-foreground gap-2 h-12 px-6 rounded-xl font-black uppercase tracking-widest text-[10px]">
+              {isCreatingKey ? <Loader2 className="w-4 h-4 animate-spin" /> : <Plus className="w-4 h-4" />}
+              Generate Key
+            </Button>
+          </form>
+
+          <div className="space-y-4">
+            {apiKeys && apiKeys.length > 0 ? (
+              apiKeys.map((key: any) => (
+                <div key={key.id} className="flex items-center justify-between p-6 rounded-2xl bg-foreground/[0.02] border border-border/5 group hover:border-border/10 transition-all">
+                  <div className="flex items-center gap-6">
+                    <div className="w-12 h-12 rounded-xl bg-acid-lime/5 flex items-center justify-center border border-acid-lime/10">
+                      <ShieldCheck className="w-5 h-5 text-acid-lime/40" />
+                    </div>
+                    <div>
+                      <p className="font-black uppercase tracking-tight text-sm">{key.name}</p>
+                      <div className="flex items-center gap-3 mt-1">
+                        <code className="text-[10px] text-muted-foreground font-mono bg-muted px-2 py-0.5 rounded">
+                          {key.key.substring(0, 8)}...{key.key.substring(key.key.length - 4)}
+                        </code>
+                        <span className="text-[10px] text-muted-foreground/40 font-medium">
+                          Created {new Date(key.createdAt).toLocaleDateString()}
+                        </span>
+                      </div>
+                    </div>
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <Button 
+                      variant="ghost" 
+                      size="icon" 
+                      className="text-muted-foreground hover:text-acid-lime"
+                      onClick={() => {
+                        navigator.clipboard.writeText(key.key)
+                        toast.success('Key copied to clipboard')
+                      }}
+                    >
+                      <Copy className="w-4 h-4" />
+                    </Button>
+                    <Button 
+                      variant="ghost" 
+                      size="icon" 
+                      className="text-muted-foreground hover:text-destructive"
+                      onClick={() => handleDeleteKey(key.id)}
+                    >
+                      <Trash2 className="w-4 h-4" />
+                    </Button>
+                  </div>
+                </div>
+              ))
+            ) : (
+              <div className="text-center py-12 border-2 border-dashed border-border/5 rounded-3xl">
+                <p className="text-muted-foreground text-sm font-medium italic">No active API keys found.</p>
+              </div>
+            )}
+          </div>
         </div>
 
         {/* Danger Zone */}

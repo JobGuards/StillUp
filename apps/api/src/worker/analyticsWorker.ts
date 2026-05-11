@@ -1,6 +1,9 @@
 import { prisma } from '@stillup/db'
 import { startOfDay, startOfWeek, subDays } from 'date-fns'
 
+import { healthScoreService } from '../services/HealthScoreService.js'
+import { patternDetectionService } from '../services/PatternDetectionService.js'
+
 /**
  * PR #38: Analytics Aggregation Worker
  *
@@ -30,6 +33,14 @@ export async function runAnalyticsAggregation(): Promise<void> {
 
     for (const monitor of monitors) {
       await aggregateDailySummary(monitor.id, dayStart)
+      
+      // Refresh intelligence metrics (Health Score & Patterns)
+      await healthScoreService.calculateAndUpdate(monitor.id).catch(e => 
+        console.error(`[AnalyticsWorker] Health score failed for ${monitor.id}:`, e.message)
+      )
+      await patternDetectionService.analyzeMonitor(monitor.id).catch(e =>
+        console.error(`[AnalyticsWorker] Pattern detection failed for ${monitor.id}:`, e.message)
+      )
     }
 
     // Weekly summary every Monday

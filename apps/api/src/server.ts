@@ -14,6 +14,7 @@ import alertChannelRoutes from "./routes/alert-channels.js";
 import publicRoutes from "./routes/public.js";
 import stripeRoutes from "./routes/stripe.js";
 import guardRoutes from "./routes/guards.js";
+import apiKeyRoutes from "./routes/api-keys.js";
 import { apiRateLimiter, authRateLimiter } from "./middleware/rateLimit.js";
 import * as Sentry from "@sentry/node";
 
@@ -75,6 +76,9 @@ export function createApp() {
 
   // 15. ReplayGuard routes
   app.use("/api/guards", guardRoutes);
+
+  // 16. API Key management
+  app.use("/api/api-keys", apiKeyRoutes);
 
   // Sentry Error Handler (must be after all controllers)
   Sentry.setupExpressErrorHandler(app);

@@ -15,7 +15,7 @@ export class PatternDetectionService {
     const failures = await (prisma.heartbeat as any).findMany({
       where: {
         monitorId,
-        status: 'error',
+        type: 'FAILURE',
         receivedAt: { gte: cutoff },
       },
       orderBy: { receivedAt: 'desc' },
@@ -75,6 +75,35 @@ export class PatternDetectionService {
     }
 
     return patterns
+  }
+
+  /**
+   * Analyze a monitor for failure patterns and persist active ones
+   */
+  async analyzeMonitor(monitorId: string): Promise<void> {
+    const patterns = await this.detectPatterns(monitorId)
+    
+    // First, mark all existing patterns for this monitor as inactive
+    await (prisma as any).failurePattern.updateMany({
+      where: { monitorId, active: true },
+      data: { active: false },
+    })
+
+    // Upsert detected patterns
+    for (const pattern of patterns) {
+      await (prisma as any).failurePattern.create({
+        data: {
+          monitorId,
+          type: pattern.type,
+          description: pattern.description,
+          occurrences: pattern.occurrences,
+          lastSeen: pattern.lastSeen,
+          severity: pattern.severity,
+          confidence: Math.min(pattern.occurrences / 10, 1.0), // Basic confidence logic
+          active: true
+        }
+      })
+    }
   }
 }
 

@@ -31,7 +31,7 @@ export class HealthScoreService {
     }
 
     // 1. Uptime Score
-    const successful = heartbeats.filter((h: any) => h.status === 'success').length
+    const successful = heartbeats.filter((h: any) => h.type === 'SUCCESS').length
     const uptime = (successful / heartbeats.length) * 100
 
     // 2. Latency Score
@@ -71,6 +71,18 @@ export class HealthScoreService {
       jitter: Math.round(jitter),
       status,
     }
+  }
+
+  /**
+   * Calculate and persist health score to the Monitor record
+   */
+  async calculateAndUpdate(monitorId: string): Promise<number> {
+    const health = await this.calculateScore(monitorId)
+    await (prisma.monitor as any).update({
+      where: { id: monitorId },
+      data: { healthScore: health.score },
+    })
+    return health.score
   }
 }
 

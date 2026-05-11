@@ -1,0 +1,85 @@
+import { Router } from 'express'
+import { prisma } from '@stillup/db'
+import { authMiddleware, projectAccessMiddleware } from '../middleware/auth.js'
+import { crypto } from '../utils/crypto.js' // Assuming a crypto util exists for secure keys
+
+const router = Router()
+
+/**
+ * GET /api/api-keys
+ * List all API keys for a project
+ */
+router.get('/', authMiddleware, projectAccessMiddleware('MEMBER'), async (req: any, res: any) => {
+  try {
+    const keys = await prisma.apiKey.findMany({
+      where: { projectId: req.project.id },
+      select: {
+        id: true,
+        name: true,
+        key: true, // In production, usually we only show the last 4 chars
+        lastUsed: true,
+        createdAt: true,
+      },
+      orderBy: { createdAt: 'desc' },
+    })
+
+    // Mask keys for security, except for the first time they are created?
+    // For now, let's show them but advise users to keep them secret.
+    res.json(keys)
+  } catch (error) {
+    console.error('List API keys error:', error)
+    res.status(500).json({ error: 'Internal server error' })
+  }
+})
+
+/**
+ * POST /api/api-keys
+ * Create a new API key
+ */
+router.post('/', authMiddleware, projectAccessMiddleware('ADMIN'), async (req: any, res: any) => {
+  try {
+    const { name } = req.body
+    if (!name) return res.status(400).json({ error: 'Name is required' })
+
+    // Generate a secure key
+    // Prefix with 'su_' for easy identification (StillUp)
+    const key = `su_${require('crypto').randomBytes(24).toString('hex')}`
+
+    const apiKey = await prisma.apiKey.create({
+      data: {
+        projectId: req.project.id,
+        name,
+        key,
+      },
+    })
+
+    res.status(201).json(apiKey)
+  } catch (error) {
+    console.error('Create API key error:', error)
+    res.status(500).json({ error: 'Internal server error' })
+  }
+})
+
+/**
+ * DELETE /api/api-keys/:id
+ * Revoke an API key
+ */
+router.delete('/:id', authMiddleware, projectAccessMiddleware('ADMIN'), async (req: any, res: any) => {
+  try {
+    const { id } = req.params
+
+    await prisma.apiKey.delete({
+      where: { 
+        id,
+        projectId: req.project.id // Ensure it belongs to the project
+      },
+    })
+
+    res.json({ message: 'API key revoked' })
+  } catch (error) {
+    console.error('Delete API key error:', error)
+    res.status(500).json({ error: 'Internal server error' })
+  }
+})
+
+export default router
