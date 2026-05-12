@@ -37,6 +37,15 @@ const handleHeartbeat = async (req: any, res: any) => {
       output = req.body?.output
       latency = req.body?.latency
       handshakeAge = req.body?.handshakeAge
+
+      // 📡 Ghost Connection Detection (for Secure Tunnel Telemetry)
+      if (monitor.type === 'TUNNEL' && handshakeAge !== undefined) {
+        const threshold = (monitor.config as any)?.handshakeThreshold || 180 // Default to 3 mins
+        if (handshakeAge > threshold) {
+          type = 'FAILURE'
+          output = `Ghost Connection Detected: Handshake age is ${handshakeAge}s (Threshold: ${threshold}s). Tunnel is likely stale.`
+        }
+      }
     }
 
     const now = new Date()
