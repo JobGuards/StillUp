@@ -27,7 +27,7 @@ export function NewNav({ userEmail }: Props) {
           Docs
         </Link>
         <Link className="px-5 py-2 rounded-full text-sm font-bold text-muted-foreground hover:text-foreground hover:bg-foreground/[0.05] transition-all duration-300 tracking-widest uppercase text-[10px]" href="/pricing">
-          Pricing
+          Cloud
         </Link>
       </nav>
 

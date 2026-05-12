@@ -100,17 +100,17 @@ export default function DashboardLayout({
           </nav>
 
           <div className="mt-auto p-4 mx-8 mb-8 glass-panel border-acid-lime/10 rounded-2xl space-y-3">
-             <div className="flex justify-between items-center">
-                <span className="text-[9px] font-black uppercase tracking-[0.2em] text-muted-foreground italic">Sentinel_Tier</span>
+             <div className="flex flex-col gap-2 justify-between items-center">
+                <span className="text-[9px] font-black uppercase tracking-[0.2em] text-muted-foreground italic">Protocol_Mode</span>
                 <span className={`text-[9px] font-black px-2 py-0.5 rounded-full ${
-                  activeOrganization?.plan === 'PRO' ? 'bg-acid-lime text-[#0f1a14]' : 'bg-muted text-muted-foreground'
+                  activeOrganization?.plan === 'PRO' ? 'bg-acid-lime text-[#0f1a14]' : 'bg-acid-lime/20 text-acid-lime border border-acid-lime/30'
                 }`}>
-                  {activeOrganization?.plan || 'FREE'}
+                  {activeOrganization?.plan === 'PRO' ? 'CLOUD_PRO' : 'OPEN_SOURCE'}
                 </span>
              </div>
              {activeOrganization?.plan !== 'PRO' && (
-               <Link href="/pricing" className="block w-full py-2 bg-acid-lime/10 border border-acid-lime/20 rounded-xl text-center text-acid-lime text-[10px] font-black uppercase tracking-widest hover:bg-acid-lime/20 transition-all">
-                  Upgrade Now
+               <Link href="/pricing" className="block w-full py-2 bg-foreground text-background rounded-xl text-center text-[10px] font-black uppercase tracking-widest hover:opacity-90 transition-all">
+                  Switch to Cloud
                </Link>
              )}
           </div>

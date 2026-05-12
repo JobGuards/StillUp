@@ -10,50 +10,48 @@ import { Button } from '@/components/ui/button'
 export default function PricingPage() {
   const plans = [
     {
-      name: 'Base Sentinel',
+      name: 'Self-Hosted',
       price: '$0',
-      description: 'Ideal for small scripts and personal projects.',
+      description: 'The core StillUp engine. Free forever.',
       features: [
-        'Up to 5 Heartbeat Monitors',
-        '5 Minute Check Intervals',
-        '10 Guarded Job Runs / mo',
-        '7 Day History Retention',
-        'Basic Email Alerts',
-        'StillUp Branded Status Page',
+        'Unlimited Heartbeat Monitors',
+        'Unlimited Guarded Sessions',
+        'Your Own Database & Infrastructure',
+        'Full Source Code Access',
+        'Community Support',
+        'No Data Retention Limits',
       ],
-      cta: 'Start Free',
+      cta: 'View GitHub',
       highlight: false,
     },
     {
-      name: 'Pro Infrastructure',
+      name: 'Cloud Pro',
       price: '$29',
-      description: 'For teams requiring deep network visibility.',
+      description: 'Managed StillUp Cloud for teams.',
       features: [
-        'Up to 50 Monitors (Heartbeat + Tunnel)',
-        'Unlimited ReplayGuard Sessions',
-        'Exactly-Once Semantics for Retries',
-        'Secure Tunnel Handshake Tracking',
-        '30 Second High-Resolution Checks',
-        '90 Day History Retention',
-        'Advanced Failure Pattern Analysis',
-        'Multi-Channel Alerts (Slack, Discord)',
+        'Up to 50 Managed Monitors',
+        'Global Edge Distribution',
+        'Exactly-Once Semantics',
+        '30 Second High-Res Checks',
+        '90 Day Managed Retention',
+        'Slack & Discord Integrations',
+        'No Infrastructure Maintenance',
       ],
-      cta: 'Go Pro',
+      cta: 'Start 14-Day Trial',
       highlight: true,
     },
     {
-      name: 'Global Enterprise',
+      name: 'Cloud Enterprise',
       price: 'Custom',
-      description: 'The complete Infrastructure Sentinel suite.',
+      description: 'The complete Sentinel suite, managed.',
       features: [
-        'Unlimited Monitors & Tunnels',
-        'Enterprise-Wide ReplayGuard Memory',
-        'Side-Effect Fingerprint Auditing',
-        'Key & Certificate Safety Audits',
-        'Real-time Handshake Telemetry',
-        'Custom Secret Rotation Alerts',
-        'White-label Infrastructure Portal',
-        'Dedicated Sentinel Support',
+        'Unlimited Managed Monitors',
+        'Side-Effect Auditing',
+        'Key & Certificate Safety',
+        'Real-time Telemetry',
+        'Custom Secret Rotation',
+        'White-label Portal',
+        'Dedicated 24/7 Support',
       ],
       cta: 'Contact Sales',
       highlight: false,
@@ -124,8 +122,8 @@ export default function PricingPage() {
 
               <Link 
                 href={
-                  plan.name === 'Base Sentinel' ? '/auth/signup' : 
-                  plan.name === 'Pro Infrastructure' ? '/payment?plan=pro' : 
+                  plan.name === 'Self-Hosted' ? 'https://github.com/StillUp/StillUp' : 
+                  plan.name === 'Cloud Pro' ? '/payment?plan=pro' : 
                   'mailto:sales@stillup.io'
                 }
                 className="w-full"
@@ -142,6 +140,27 @@ export default function PricingPage() {
               </Link>
             </div>
           ))}
+        </div>
+
+        {/* Community First Notice */}
+        <div className="glass-panel border-acid-lime/20 bg-acid-lime/[0.02] rounded-[3rem] p-12 text-center space-y-6 max-w-4xl mx-auto">
+          <div className="inline-flex items-center gap-3 px-4 py-1 rounded-full bg-acid-lime/10 border border-acid-lime/20">
+            <Cpu className="w-3.5 h-3.5 text-acid-lime" />
+            <span className="text-[9px] font-black uppercase tracking-widest text-acid-lime italic">Community_First_Protocol</span>
+          </div>
+          <h2 className="text-3xl font-black uppercase tracking-tight italic">Focused on Open Source.</h2>
+          <p className="text-muted-foreground leading-relaxed max-w-2xl mx-auto">
+            StillUp is currently focused on empowering the developer community through our <b>OSS Version</b>. 
+            While we offer managed Cloud plans, our expansion into global infrastructure and specialized Cloud support will be 
+            <b> 100% driven by community demand</b>. 
+          </p>
+          <div className="flex flex-wrap justify-center gap-4 pt-4">
+             <Link href="https://github.com/StillUp/StillUp/discussions">
+               <Button variant="outline" className="rounded-full border-border/20 text-xs font-bold uppercase tracking-widest px-8">
+                 Join the Discussion
+               </Button>
+             </Link>
+          </div>
         </div>
 
         {/* trust Section */}

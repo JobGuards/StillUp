@@ -70,10 +70,10 @@ export default function LandingPage() {
               <span className="tracking-[0.2em] uppercase text-[10px] font-black italic">Sentinel_Protocol: Active</span>
             </div>
             <h1 className="text-headline-xl font-headline-xl text-foreground uppercase tracking-tight">
-              If it fails or <span className="glow-lime font-black">degrades</span>, <br/> we're the first to know.
+              The <span className="glow-lime font-black">Open Source</span> <br/> Reliability Platform.
             </h1>
             <p className="text-body-lg font-body-lg text-muted-foreground max-w-2xl mt-2">
-              The first Reliability Platform for Crons, Secure Tunnels, and <b>Safe Background Jobs</b>. We monitor health, detect silent failures, and prevent duplicate side effects.
+              Deep observability for Crons, Secure Tunnels, and <b>Safe Background Jobs</b>. Free to self-host, secure by default, and built for modern infrastructure.
             </p>
             <div className="flex flex-col items-center gap-md mt-10">
               <Link href="/auth/signup" className="bg-acid-lime text-primary-foreground px-xl py-sm rounded-lg font-black uppercase tracking-widest text-sm shadow-[0_0_20px_rgba(var(--theme-lime-rgb),0.3)] hover:shadow-[0_0_40px_rgba(var(--theme-lime-rgb),0.6)] transition-all duration-500 flex items-center gap-xs transform hover:-translate-y-1">
