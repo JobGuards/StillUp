@@ -22,7 +22,7 @@ import Link from 'next/link'
 import { formatDistanceToNow, format } from 'date-fns'
 import { toast } from 'sonner'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
-import { LayoutDashboard, History as HistoryIcon, BarChart2 } from 'lucide-react'
+import { LayoutDashboard, History as HistoryIcon, BarChart2, Wifi, Zap, Activity as ActivityIcon } from 'lucide-react'
 import { UptimeChart, FailureDistributionChart, HealthScoreGauge, FailurePatternsPanel } from '@/components/analytics/AnalyticsCharts'
 import { IncidentTimeline } from '@/components/analytics/IncidentTimeline'
 
@@ -202,6 +202,10 @@ export default function MonitorDetailPage() {
                 <CardContent>
                   <dl className="grid grid-cols-1 sm:grid-cols-2 gap-x-8 gap-y-4 text-sm">
                     <div className="flex flex-col gap-1">
+                      <dt className="text-muted-foreground">Type</dt>
+                      <dd className="font-semibold">{monitor.type}</dd>
+                    </div>
+                    <div className="flex flex-col gap-1">
                       <dt className="text-muted-foreground">Grace Period</dt>
                       <dd className="font-semibold">{monitor.graceSeconds}s ({Math.floor(monitor.graceSeconds / 60)} min)</dd>
                     </div>
@@ -213,13 +217,27 @@ export default function MonitorDetailPage() {
                       <dt className="text-muted-foreground">Notify After</dt>
                       <dd className="font-semibold">{monitor.notifyAfterSeconds}s delay</dd>
                     </div>
-                    <div className="flex flex-col gap-1">
-                      <dt className="text-muted-foreground">Project</dt>
-                      <dd className="font-semibold uppercase tracking-wider text-[10px] px-2 py-0.5 bg-muted rounded w-fit">{monitor.projectId}</dd>
-                    </div>
                   </dl>
                 </CardContent>
               </Card>
+
+              {/* Tunnelight Telemetry */}
+              {monitor.type === 'TUNNEL' && (
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                  <StatCard 
+                    title="Real-time Latency"
+                    value={monitor.lastHeartbeat?.latency != null ? `${monitor.lastHeartbeat.latency}ms` : '---'}
+                    subValue="Round-trip time via Sentinel CLI"
+                    icon={<Wifi className="h-4 w-4 text-acid-lime" />}
+                  />
+                  <StatCard 
+                    title="Handshake Age"
+                    value={monitor.lastHeartbeat?.handshakeAge != null ? `${Math.floor(monitor.lastHeartbeat.handshakeAge / 60)}m ${monitor.lastHeartbeat.handshakeAge % 60}s` : '---'}
+                    subValue="Time since last cryptographic sync"
+                    icon={<Zap className="h-4 w-4 text-acid-lime" />}
+                  />
+                </div>
+              )}
             </div>
 
             <div className="space-y-6">

@@ -23,8 +23,8 @@ StillUp provides the "Safety Primitives" that prevent autonomous agents and back
 ## 🟡 Phase 2: Agent-Centric Safety (In Progress)
 *Deepening support for AI Agents and non-deterministic autonomous systems.*
 
-- [/] **AI Action Verification**: Specialized `.ai()` wrapper to protect high-cost LLM generations.
-- [/] **Webhook Safety Layer**: Automatic idempotency headers and replay protection for outbound webhooks.
+- [x] **AI Action Verification**: Specialized `.ai()` wrapper to protect high-cost LLM generations.
+- [x] **Webhook Safety Layer**: Automatic idempotency headers and replay protection for outbound webhooks.
 - [ ] **State Fingerprinting**: Ability to snapshot infrastructure state before/after actions to detect drift.
 - [ ] **Deduplication Engine**: Global cross-project deduplication for identical jobs triggered by agents.
 - [ ] **Multi-Attempt History**: Aggregated view of a job's life across N failures and M recoveries.
@@ -36,7 +36,7 @@ StillUp provides the "Safety Primitives" that prevent autonomous agents and back
 
 - [ ] **Rollback-Aware Execution**: Integrated logic to trigger cleanup/undo actions if a job fails mid-run.
 - [ ] **Operational Memory Graph**: Visualization of how different jobs and side effects are connected.
-- [ ] **Tunnelight Handshake Audits**: Deep telemetry for WireGuard/VPN tunnels to detect "Ghost Connections."
+- [/] **Tunnelight Handshake Audits**: Deep telemetry for WireGuard/VPN tunnels to detect "Ghost Connections."
 - [ ] **Secret Rotation Sentinels**: Automatic alerts for expiring certificates and stale keys detected in job telemetry.
 - [ ] **Jitter & Network Degradation**: Pattern detection for unstable pipes before they fully disconnect.
 
@@ -60,8 +60,8 @@ StillUp provides the "Safety Primitives" that prevent autonomous agents and back
 | Action Fingerprinting | Safety Primitive | ✅ COMPLETED |
 | Execution Tracing | Safety Primitive | ✅ COMPLETED |
 | ReplayGuard SDK | Safety Primitive | ✅ COMPLETED |
-| AI Agent Retry Protection | Agent Safety | 🚧 IN PROGRESS |
-| Webhook Safety | Agent Safety | 🚧 IN PROGRESS |
+| AI Agent Retry Protection | Agent Safety | ✅ COMPLETED |
+| Webhook Safety | Agent Safety | ✅ COMPLETED |
 | Rollback Engine | Infrastructure Memory | 📅 UPCOMING |
 | Operational Memory Graph | Infrastructure Memory | 📅 UPCOMING |
-| Tunnelight Engine | Telemetry | 📅 UPCOMING |
+| Tunnelight Engine | Telemetry | 🚧 IN PROGRESS |

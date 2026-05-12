@@ -1,9 +1,17 @@
 'use client'
 
 import React from 'react'
-import { Shield, Zap, Activity, Clock, Key } from 'lucide-react'
+import { Shield, Zap, Activity, Clock, Key, MoreVertical } from 'lucide-react'
+import Link from 'next/link'
+import { Button } from '@/components/ui/button'
 import { HealthScoreBadge } from './HealthScoreBadge'
 import { HeartbeatPulse } from './HeartbeatPulse'
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from '@/components/ui/dropdown-menu'
 
 interface TunnelStatusCardProps {
   monitor: {
@@ -37,7 +45,9 @@ export function TunnelStatusCard({ monitor }: TunnelStatusCardProps) {
               <Shield className="w-6 h-6" />
             </div>
             <div>
-              <h3 className="text-2xl font-black uppercase tracking-tighter italic leading-none">{monitor.name}</h3>
+              <Link href={`/dashboard/monitors/${monitor.id}`}>
+                <h3 className="text-2xl font-black uppercase tracking-tighter italic leading-none group-hover:text-acid-lime transition-colors">{monitor.name}</h3>
+              </Link>
               <p className="text-[10px] font-black text-muted-foreground/40 uppercase tracking-[0.2em] mt-2 italic">Secure Tunnel (WireGuard)</p>
             </div>
           </div>
@@ -65,7 +75,25 @@ export function TunnelStatusCard({ monitor }: TunnelStatusCardProps) {
         </div>
 
         <div className="flex flex-col items-end gap-4">
-          <HealthScoreBadge score={monitor.healthScore} />
+          <div className="flex items-center gap-2">
+            <HealthScoreBadge score={monitor.healthScore} />
+            <DropdownMenu>
+              <DropdownMenuTrigger asChild>
+                <Button variant="ghost" size="icon" className="rounded-xl h-8 w-8">
+                  <MoreVertical className="w-4 h-4" />
+                </Button>
+              </DropdownMenuTrigger>
+              <DropdownMenuContent align="end" className="rounded-xl border-border/10">
+                <DropdownMenuItem asChild>
+                  <Link href={`/dashboard/monitors/${monitor.id}`}>Details</Link>
+                </DropdownMenuItem>
+                <DropdownMenuItem asChild>
+                  <Link href={`/dashboard/monitors/${monitor.id}/edit`}>Edit</Link>
+                </DropdownMenuItem>
+                <DropdownMenuItem className="text-destructive">Pause</DropdownMenuItem>
+              </DropdownMenuContent>
+            </DropdownMenu>
+          </div>
           <div className="flex items-center gap-2 text-[10px] font-black uppercase tracking-widest text-muted-foreground">
             <div className={`w-2 h-2 rounded-full animate-pulse ${monitor.status === 'UP' ? 'bg-acid-lime' : 'bg-destructive'}`} />
             {monitor.status}
@@ -85,12 +113,12 @@ export function TunnelStatusCard({ monitor }: TunnelStatusCardProps) {
       </div>
 
       <div className="mt-6 flex justify-end">
-        <button className="text-[10px] font-black uppercase tracking-widest text-acid-lime hover:opacity-70 transition-opacity flex items-center gap-2 group">
-          Security Audit
+        <Link href={`/dashboard/monitors/${monitor.id}`} className="text-[10px] font-black uppercase tracking-widest text-acid-lime hover:opacity-70 transition-opacity flex items-center gap-2 group">
+          View Analytics
           <div className="w-4 h-4 rounded-full bg-acid-lime/10 flex items-center justify-center group-hover:translate-x-1 transition-transform">
             <Zap className="w-2 h-2" />
           </div>
-        </button>
+        </Link>
       </div>
     </div>
   )
@@ -113,3 +141,4 @@ function MetricBadge({ icon, label, value, status }: { icon: React.ReactNode, la
     </div>
   )
 }
+

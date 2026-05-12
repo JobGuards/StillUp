@@ -30,27 +30,50 @@ export class MonitorRepository {
    * Find a monitor by ID and project ID
    */
   async findById(id: string, projectId: string) {
-    return (prisma.monitor as any).findFirst({
+    const monitor = await (prisma.monitor as any).findFirst({
       where: {
         id,
         projectId,
         deletedAt: null,
       },
+      include: {
+        heartbeats: {
+          take: 1,
+          orderBy: { receivedAt: 'desc' },
+        }
+      }
     })
+
+    if (monitor && monitor.heartbeats) {
+      (monitor as any).lastHeartbeat = monitor.heartbeats[0] || null
+    }
+
+    return monitor
   }
 
   /**
    * Find all monitors for a project
    */
   async findAll(projectId: string) {
-    return (prisma.monitor as any).findMany({
+    const monitors = await (prisma.monitor as any).findMany({
       where: {
         projectId,
         deletedAt: null,
       },
+      include: {
+        heartbeats: {
+          take: 1,
+          orderBy: { receivedAt: 'desc' },
+        }
+      },
       orderBy: {
         createdAt: 'desc',
       },
+    })
+
+    return monitors.map((m: any) => {
+      m.lastHeartbeat = m.heartbeats?.[0] || null
+      return m
     })
   }
 

@@ -154,6 +154,14 @@ export class ReplayGuard {
   async ai<T>(model: string, params: any, operation: () => Promise<T>): Promise<T> {
     return this.wrap('AI_GENERATION', model, params, operation);
   }
+
+  /**
+   * Specialized wrapper for outbound webhooks.
+   * Ensures idempotency for external service notifications.
+   */
+  async webhook<T>(target: string, payload: any, operation: () => Promise<T>): Promise<T> {
+    return this.wrap('WEBHOOK', target, payload, operation);
+  }
 }
 
 /**
