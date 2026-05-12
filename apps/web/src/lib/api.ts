@@ -140,6 +140,24 @@ class ApiClient {
       method: 'DELETE',
     })
   }
+
+  // Alert Channel methods
+  async getAlertChannels(): Promise<any[]> {
+    return this.fetch<any[]>('/alert-channels')
+  }
+
+  async createAlertChannel(type: string, config: any): Promise<any> {
+    return this.fetch<any>('/alert-channels', {
+      method: 'POST',
+      body: JSON.stringify({ type, config }),
+    })
+  }
+
+  async deleteAlertChannel(id: string): Promise<void> {
+    return this.fetch<void>(`/alert-channels/${id}`, {
+      method: 'DELETE',
+    })
+  }
 }
 
 export const api = new ApiClient()

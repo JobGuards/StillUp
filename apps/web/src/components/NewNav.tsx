@@ -4,6 +4,7 @@ import Link from "next/link";
 import { useState } from "react";
 import { Logo } from "./Logo";
 import { ModeToggle } from "./ModeToggle";
+import { User } from "lucide-react";
 
 type Props = {
   userEmail: string | null;
@@ -40,7 +41,7 @@ export function NewNav({ userEmail }: Props) {
               className="relative group focus:outline-none flex items-center justify-center ml-2"
             >
               <div className={`w-10 h-10 rounded-full bg-surface-container-high border ${isProfileOpen ? 'border-acid-lime/50 ring-2 ring-acid-lime/20' : 'border-outline-variant/50'} flex items-center justify-center overflow-hidden hover:border-acid-lime/50 transition-colors duration-300 ring-2 ring-transparent hover:ring-acid-lime/20`}>
-                <span className="material-symbols-outlined text-on-surface text-lg">person</span>
+                <User className="w-5 h-5 text-on-surface" />
               </div>
               <span className="absolute bottom-0 right-0 w-2.5 h-2.5 bg-acid-lime rounded-full border-2 border-background animate-pulse"></span>
             </button>

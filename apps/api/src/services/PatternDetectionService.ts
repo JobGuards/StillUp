@@ -97,7 +97,7 @@ export class PatternDetectionService {
           type: pattern.type,
           description: pattern.description,
           occurrences: pattern.occurrences,
-          lastSeen: pattern.lastSeen,
+          lastSeenAt: pattern.lastSeen,
           severity: pattern.severity,
           confidence: Math.min(pattern.occurrences / 10, 1.0), // Basic confidence logic
           active: true

@@ -84,7 +84,7 @@ export default function PricingPage() {
         </div>
 
         {/* Pricing Grid */}
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-10">
+        {/* <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-10">
           {plans.map((plan) => (
             <div
               key={plan.name}
@@ -140,7 +140,7 @@ export default function PricingPage() {
               </Link>
             </div>
           ))}
-        </div>
+        </div> */}
 
         {/* Community First Notice */}
         <div className="glass-panel border-acid-lime/20 bg-acid-lime/[0.02] rounded-[3rem] p-12 text-center space-y-6 max-w-4xl mx-auto">

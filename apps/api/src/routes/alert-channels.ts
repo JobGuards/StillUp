@@ -121,6 +121,12 @@ router.post('/:id/test', authMiddleware, projectAccessMiddleware('ADMIN'), async
 router.delete('/:id', authMiddleware, projectAccessMiddleware('ADMIN'), async (req, res) => {
   try {
     const { project } = req
+    
+    // First, delete any Alert records associated with this channel
+    await (prisma as any).alert.deleteMany({
+      where: { channelId: req.params.id }
+    })
+
     await (prisma.alertChannel as any).delete({
       where: { id: req.params.id, projectId: project!.id },
     })

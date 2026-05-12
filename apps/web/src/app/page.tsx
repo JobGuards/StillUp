@@ -4,6 +4,7 @@ import Link from "next/link";
 import { useState } from "react";
 import { NewNav } from "@/components/NewNav";
 import { Footer } from "@/components/Footer";
+import { useAuth } from "@/contexts/AuthContext";
 import { 
   ArrowRight, 
   Copy, 
@@ -25,6 +26,7 @@ import {
 const START_COMMAND = "curl -fsS https://stillup.io/hb/your-token";
 
 export default function LandingPage() {
+  const { user } = useAuth();
   const [copied, setCopied] = useState(false);
   const [openFaq, setOpenFaq] = useState<number | null>(null);
   const [activeFeature, setActiveFeature] = useState(0);
@@ -60,7 +62,7 @@ export default function LandingPage() {
         </div>
         
         {/* TopNavBar */}
-        <NewNav userEmail={null} />
+        <NewNav userEmail={user?.email || null} />
 
         <main className="flex-grow pt-40 pb-xl px-margin max-w-7xl mx-auto w-full flex flex-col items-center gap-xl relative z-10">
           {/* Hero Section */}
