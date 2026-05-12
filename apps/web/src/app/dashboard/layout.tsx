@@ -27,6 +27,9 @@ export default function DashboardLayout({
     }
   }, [user, isLoading, router])
 
+  const isCloud = process.env.NEXT_PUBLIC_STILLUP_CLOUD === 'true'
+  const isPro = activeOrganization?.plan === 'PRO' && isCloud
+
   if (isLoading) {
     return (
       <div className="h-screen flex flex-col items-center justify-center bg-background bg-tech-grid">
@@ -103,12 +106,12 @@ export default function DashboardLayout({
              <div className="flex flex-col gap-2 justify-between items-center">
                 <span className="text-[9px] font-black uppercase tracking-[0.2em] text-muted-foreground italic">Protocol_Mode</span>
                 <span className={`text-[9px] font-black px-2 py-0.5 rounded-full ${
-                  activeOrganization?.plan === 'PRO' ? 'bg-acid-lime text-[#0f1a14]' : 'bg-acid-lime/20 text-acid-lime border border-acid-lime/30'
+                  isPro ? 'bg-acid-lime text-[#0f1a14]' : 'bg-acid-lime/20 text-acid-lime border border-acid-lime/30'
                 }`}>
-                  {activeOrganization?.plan === 'PRO' ? 'CLOUD_PRO' : 'OPEN_SOURCE'}
+                  {isPro ? 'CLOUD_PRO' : 'OPEN_SOURCE'}
                 </span>
              </div>
-             {activeOrganization?.plan !== 'PRO' && (
+             {!isPro && (
                <Link href="/pricing" className="block w-full py-2 bg-foreground text-background rounded-xl text-center text-[10px] font-black uppercase tracking-widest hover:opacity-90 transition-all">
                   Switch to Cloud
                </Link>

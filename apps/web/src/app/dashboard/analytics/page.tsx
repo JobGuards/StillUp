@@ -30,12 +30,16 @@ import {
 
 export default function Analytics() {
   const timeRanges = ['7d', '30d', '90d', '1y'] as const
-  const selectedRange = '30d'
+  const [selectedRange, setSelectedRange] = React.useState<typeof timeRanges[number]>('7d')
 
-  // Fetch real analytics overview
-  const { data: overview, isLoading } = useSWR('/api/analytics/project/overview', () => api.getProjectOverview())
+  // Fetch real analytics overview with the selected time range
+  const { data: overview, isLoading } = useSWR(
+    `/api/analytics/project/overview?range=${selectedRange}`, 
+    () => api.getProjectOverview()
+  )
 
   const monitors = overview?.monitors || []
+  const projectTrend = overview?.projectTrend || []
   
   const stats = useMemo(() => {
     if (monitors.length === 0) return { uptime: 0, totalHeartbeats: 0, failureRate: 0 }
@@ -43,9 +47,15 @@ export default function Analytics() {
     const totalHealth = monitors.reduce((acc: number, m: any) => acc + (m.healthScore || 0), 0)
     const avgHealth = totalHealth / monitors.length
     
+    // Total heartbeats across all monitors in the period
+    const totalHeartbeats = monitors.reduce((acc: number, m: any) => {
+      const summary = m.executionSummaries || []
+      return acc + summary.reduce((sum: number, s: any) => sum + (s.totalCount || 0), 0)
+    }, 0)
+    
     return {
       uptime: Math.round(avgHealth * 10) / 10,
-      totalHeartbeats: monitors.reduce((acc: number, m: any) => acc + (m.executionSummaries?.[0]?.totalCount || 0), 0),
+      totalHeartbeats,
       failureRate: Math.round((100 - avgHealth) * 10) / 10
     }
   }, [monitors])
@@ -70,6 +80,7 @@ export default function Analytics() {
           {timeRanges.map(range => (
             <button
               key={range}
+              onClick={() => setSelectedRange(range)}
               className={`px-4 py-1.5 rounded-lg text-xs font-bold transition-all ${
                 selectedRange === range
                   ? 'bg-acid-lime text-primary-foreground shadow-lg shadow-acid-lime/20'
@@ -157,7 +168,7 @@ export default function Analytics() {
           <h2 className="text-xl font-black text-foreground mb-8 uppercase tracking-tight">Uptime Trend</h2>
           <div className="h-[300px] w-full">
             <ResponsiveContainer width="100%" height="100%">
-              <AreaChart data={monitors[0]?.executionSummaries || []}>
+              <AreaChart data={projectTrend}>
                 <defs>
                   <linearGradient id="colorUptime" x1="0" y1="0" x2="0" y2="1">
                     <stop offset="5%" stopColor="#d9ff00" stopOpacity={0.3}/>

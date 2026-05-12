@@ -77,8 +77,15 @@ router.get('/:monitorId/pulse', authMiddleware, monitorAccessMiddleware(), async
  */
 router.get('/project/overview', authMiddleware, projectAccessMiddleware(), async (req: any, res: any) => {
   try {
-    const { projectId } = req.query as { projectId: string }
-    const sevenDaysAgo = subDays(new Date(), 7)
+    const { projectId, range = '7d' } = req.query as { projectId: string, range: string }
+    
+    // Calculate days based on range
+    let days = 7
+    if (range === '30d') days = 30
+    else if (range === '90d') days = 90
+    else if (range === '1y') days = 365
+
+    const startDate = subDays(startOfDay(new Date()), days)
 
     const monitors = await (prisma as any).monitor.findMany({
       where: { projectId, deletedAt: null },
@@ -89,9 +96,8 @@ router.get('/project/overview', authMiddleware, projectAccessMiddleware(), async
         healthScore: true,
         lastHeartbeatAt: true,
         executionSummaries: {
-          where: { period: 'daily', date: { gte: sevenDaysAgo } },
-          orderBy: { date: 'desc' },
-          take: 7,
+          where: { period: 'daily', date: { gte: startDate } },
+          orderBy: { date: 'asc' },
         },
         failurePatterns: {
           where: { active: true },
@@ -100,7 +106,30 @@ router.get('/project/overview', authMiddleware, projectAccessMiddleware(), async
       },
     })
 
-    res.json({ monitors })
+    // Calculate project-wide aggregate trend
+    const trendMap = new Map<string, { date: string, uptime: number, count: number }>()
+    
+    monitors.forEach((m: any) => {
+      m.executionSummaries.forEach((s: any) => {
+        const dateStr = s.date.toISOString().split('T')[0]
+        const existing = trendMap.get(dateStr) || { date: dateStr, uptime: 0, count: 0 }
+        
+        trendMap.set(dateStr, {
+          date: dateStr,
+          uptime: existing.uptime + (s.uptime || 0),
+          count: existing.count + 1
+        })
+      })
+    })
+
+    const projectTrend = Array.from(trendMap.values())
+      .map(t => ({
+        date: t.date,
+        uptime: Math.round((t.uptime / t.count) * 100) / 100
+      }))
+      .sort((a, b) => a.date.localeCompare(b.date))
+
+    res.json({ monitors, projectTrend })
   } catch (err) {
     console.error(err)
     res.status(500).json({ error: 'Internal server error' })
