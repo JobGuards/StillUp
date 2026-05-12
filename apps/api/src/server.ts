@@ -26,12 +26,6 @@ dotenv.config();
 export function createApp() {
   const app = express();
 
-  // Debug Logger
-  app.use((req, res, next) => {
-    console.log(`[API] ${req.method} ${req.url}`);
-    next();
-  });
-
   // 1. Security Headers
   app.use(helmet());
 

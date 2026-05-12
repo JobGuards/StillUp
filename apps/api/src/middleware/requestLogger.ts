@@ -13,13 +13,7 @@ export const requestLogger = pinoHttp({
   customSuccessMessage: (req: any, res) => `${req.method} ${req.originalUrl || req.url} ${res.statusCode}`,
   customErrorMessage: (req: any, res, err) => `${req.method} ${req.originalUrl || req.url} ${res.statusCode} - ${err.message}`,
   serializers: {
-    req: (req: any) => ({
-      id: req.id,
-      method: req.method,
-      url: req.originalUrl || req.url,
-      query: req.query,
-      params: req.params,
-      headers: req.headers,
-    }),
+    req: () => undefined,
+    res: () => undefined,
   },
 });

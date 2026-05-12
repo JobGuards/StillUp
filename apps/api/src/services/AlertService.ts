@@ -90,9 +90,12 @@ export class AlertService {
 
     try {
       // Decrypt config before sending
+      console.log(`[AlertService] Delivering to ${channel.type} (ID: ${channel.id})`)
       const decryptedConfig = typeof channel.config === 'string' 
         ? decryptJSON(channel.config) 
         : channel.config
+
+      console.log(`[AlertService] Config Keys: ${Object.keys(decryptedConfig || {}).join(', ')}`)
 
       await provider.sendAlert(decryptedConfig, data)
       
@@ -129,11 +132,21 @@ export class AlertService {
       },
     })
 
-    // Decrypt configs
-    return channels.map((c: any) => ({
-      ...c,
-      config: typeof c.config === 'string' ? decryptJSON(c.config) : c.config
-    }))
+    // Decrypt configs and filter out failed decryptions
+    return channels.map((c: any) => {
+      try {
+        const decryptedConfig = typeof c.config === 'string' ? decryptJSON(c.config) : c.config
+        // If decryption failed, it might return a string or an object without expected keys
+        if (typeof decryptedConfig !== 'object' || decryptedConfig === null) {
+          console.warn(`[AlertService] Skipping channel ${c.id}: Configuration decryption failed.`)
+          return null
+        }
+        return { ...c, config: decryptedConfig }
+      } catch (e) {
+        console.warn(`[AlertService] Skipping channel ${c.id}: Decryption error.`)
+        return null
+      }
+    }).filter(Boolean) as any[]
   }
 }
 

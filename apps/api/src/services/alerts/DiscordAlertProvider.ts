@@ -12,6 +12,7 @@ export class DiscordAlertProvider implements AlertProvider {
     const emoji = isResolution ? '✅' : '🚨'
 
     const payload = {
+      username: 'StillUp Alert',
       embeds: [
         {
           title: `${emoji} Monitor ${statusText}: ${data.monitor.name}`,

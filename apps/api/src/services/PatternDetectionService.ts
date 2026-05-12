@@ -6,7 +6,6 @@ export interface FailurePattern {
   description: string
   occurrences: number
   lastSeen: Date
-  severity: 'high' | 'medium' | 'low'
 }
 
 export class PatternDetectionService {
@@ -39,7 +38,6 @@ export class PatternDetectionService {
           description: `Frequent failures detected around ${hour}:00. Possible maintenance window or scheduled task conflict.`,
           occurrences: count,
           lastSeen: failures[0].receivedAt,
-          severity: count > 5 ? 'high' : 'medium',
         })
       }
     }
@@ -58,7 +56,6 @@ export class PatternDetectionService {
         description: `High latency detected in ${latencySpikes} of the last 20 heartbeats. Tunnel performance is degrading.`,
         occurrences: latencySpikes,
         lastSeen: recentHeartbeats[0].receivedAt,
-        severity: 'medium',
       })
     }
 
@@ -70,7 +67,6 @@ export class PatternDetectionService {
         description: `Stale tunnel handshakes detected. The secure tunnel may be functionally disconnected even if the process is running.`,
         occurrences: staleHandshakes,
         lastSeen: recentHeartbeats[0].receivedAt,
-        severity: 'high',
       })
     }
 
@@ -98,7 +94,6 @@ export class PatternDetectionService {
           description: pattern.description,
           occurrences: pattern.occurrences,
           lastSeenAt: pattern.lastSeen,
-          severity: pattern.severity,
           confidence: Math.min(pattern.occurrences / 10, 1.0), // Basic confidence logic
           active: true
         }

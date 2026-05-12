@@ -51,8 +51,8 @@ export function decrypt(encryptedText: string): string {
     decrypted += decipher.final('utf8')
     
     return decrypted
-  } catch (error) {
-    console.error('[Encryption] Decryption failed:', error)
+  } catch (error: any) {
+    console.warn(`[Encryption] Decryption failed: ${error.message}`)
     return encryptedText // Return original if decryption fails (might be unencrypted legacy data)
   }
 }
