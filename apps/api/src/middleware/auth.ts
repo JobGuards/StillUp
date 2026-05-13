@@ -20,12 +20,85 @@ declare global {
 }
 
 /**
+ * Unified Authentication Middleware
+ * Supports BOTH Session Cookie and API Key authentication
+ */
+export async function unifiedAuth(
+  req: Request,
+  res: Response,
+  next: NextFunction
+): Promise<void> {
+  try {
+    // 1. Try Session Cookie (JWT)
+    const token = req.cookies?.token
+    if (token) {
+      try {
+        const payload = verifyToken(token)
+        const user = await prisma.user.findUnique({
+          where: { id: payload.userId },
+          select: { id: true, email: true, name: true },
+        })
+
+        if (user) {
+          req.user = { id: user.id, email: user.email!, fullName: user.name }
+          return next()
+        }
+      } catch (err) {
+        // Token invalid, fall through to API key check
+      }
+    }
+
+    // 2. Try API Key
+    const apiKey = req.headers['x-api-key']
+    if (apiKey && typeof apiKey === 'string') {
+      const keyData = await prisma.apiKey.findUnique({
+        where: { key: apiKey },
+        select: { projectId: true, id: true },
+      })
+
+      if (keyData) {
+        // Attach project to request
+        req.project = { id: keyData.projectId, role: 'ADMIN' } // API keys act as ADMIN
+        
+        // Asynchronously update lastUsed
+        prisma.apiKey.update({
+          where: { id: keyData.id },
+          data: { lastUsed: new Date() },
+        }).catch(e => console.error('Error updating api key lastUsed:', e))
+        
+        return next()
+      }
+    }
+
+    // 3. Both failed
+    res.status(401).json({ error: 'Authentication required (Session or API Key)' })
+  } catch (error) {
+    console.error('Unified Auth error:', error)
+    res.status(500).json({ error: 'Internal server error' })
+  }
+}
+
+/**
  * Project Access Middleware
  * Ensures the user has access to a specific project and has the required role
  */
 export function projectAccessMiddleware(requiredRole: 'OWNER' | 'ADMIN' | 'MEMBER' = 'MEMBER') {
   return async (req: Request, res: Response, next: NextFunction): Promise<void> => {
     try {
+      // If req.project is already set (e.g. by unifiedAuth/apiKeyMiddleware), we can skip user check
+      if (req.project) {
+        // Still verify role if it was set
+        const roles = ['MEMBER', 'ADMIN', 'OWNER']
+        const userRoleIndex = roles.indexOf(req.project.role)
+        const requiredRoleIndex = roles.indexOf(requiredRole)
+
+        if (userRoleIndex < requiredRoleIndex) {
+          res.status(403).json({ error: `Insufficient permissions. Required role: ${requiredRole}` })
+          return
+        }
+        return next()
+      }
+
       if (!req.user) {
         res.status(401).json({ error: 'Authentication required' })
         return

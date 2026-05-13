@@ -32,6 +32,23 @@ npm install -g @stillup/cli
    stillup guard status <execution-id>
    ```
 
+5. **View Activity Logs**:
+   ```bash
+   stillup logs --limit 10
+   ```
+
+6. **Manage Monitors**:
+   ```bash
+   # List all monitors
+   stillup monitor list
+   
+   # Add a new Tunnel monitor (as seen in docs)
+   stillup monitor add --type tunnel --name "HQ-Office-VPN" --threshold 180s
+   
+   # Delete a monitor
+   stillup monitor delete <monitor-id>
+   ```
+
 ## Features
 
 - **Heartbeat Pulses**: Simple CLI pings to keep your monitors alive.

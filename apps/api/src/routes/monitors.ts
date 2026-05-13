@@ -1,5 +1,5 @@
 import { Router } from 'express'
-import { authMiddleware, projectAccessMiddleware } from '../middleware/auth.js'
+import { authMiddleware, projectAccessMiddleware, unifiedAuth } from '../middleware/auth.js'
 import { createMonitorSchema, updateMonitorSchema } from '../validators/monitor.js'
 import { monitorRepository } from '../repositories/MonitorRepository.js'
 import { getNextExpectedDate } from '../utils/scheduleParser.js'
@@ -11,7 +11,7 @@ const router = Router()
  * POST /api/monitors
  * Create a new monitor
  */
-router.post('/', authMiddleware, projectAccessMiddleware('ADMIN'), async (req, res) => {
+router.post('/', unifiedAuth, projectAccessMiddleware('ADMIN'), async (req, res) => {
   try {
     // 1. Validate request body
     const validation = createMonitorSchema.safeParse(req.body)
@@ -51,7 +51,7 @@ router.post('/', authMiddleware, projectAccessMiddleware('ADMIN'), async (req, r
     })
 
     // Log the action
-    await auditService.logMonitorAction('MONITOR_CREATE', updatedMonitor, req.user!.id)
+    await auditService.logMonitorAction('MONITOR_CREATE', updatedMonitor, req.user?.id)
 
     res.status(201).json(updatedMonitor)
   } catch (error) {
@@ -68,7 +68,7 @@ router.post('/', authMiddleware, projectAccessMiddleware('ADMIN'), async (req, r
  * GET /api/monitors
  * List all monitors for the project
  */
-router.get('/', authMiddleware, projectAccessMiddleware('MEMBER'), async (req, res) => {
+router.get('/', unifiedAuth, projectAccessMiddleware('MEMBER'), async (req, res) => {
   try {
     const { project } = req
     if (!project) {
@@ -88,7 +88,7 @@ router.get('/', authMiddleware, projectAccessMiddleware('MEMBER'), async (req, r
  * GET /api/monitors/:id
  * Get a specific monitor
  */
-router.get('/:id', authMiddleware, projectAccessMiddleware('MEMBER'), async (req, res) => {
+router.get('/:id', unifiedAuth, projectAccessMiddleware('MEMBER'), async (req, res) => {
   try {
     const { project } = req
     if (!project) {
@@ -113,7 +113,7 @@ router.get('/:id', authMiddleware, projectAccessMiddleware('MEMBER'), async (req
  * PUT /api/monitors/:id
  * Update a monitor
  */
-router.put('/:id', authMiddleware, projectAccessMiddleware('ADMIN'), async (req, res) => {
+router.put('/:id', unifiedAuth, projectAccessMiddleware('ADMIN'), async (req, res) => {
   try {
     const validation = updateMonitorSchema.safeParse(req.body)
     if (!validation.success) {
@@ -151,7 +151,7 @@ router.put('/:id', authMiddleware, projectAccessMiddleware('ADMIN'), async (req,
     }
 
     // Log the action
-    await auditService.logMonitorAction('MONITOR_UPDATE', monitor, req.user!.id, { changes: Object.keys(updateData) })
+    await auditService.logMonitorAction('MONITOR_UPDATE', monitor, req.user?.id, { changes: Object.keys(updateData) })
 
     res.json(monitor)
   } catch (error) {
@@ -164,7 +164,7 @@ router.put('/:id', authMiddleware, projectAccessMiddleware('ADMIN'), async (req,
  * DELETE /api/monitors/:id
  * Soft-delete a monitor
  */
-router.delete('/:id', authMiddleware, projectAccessMiddleware('ADMIN'), async (req, res) => {
+router.delete('/:id', unifiedAuth, projectAccessMiddleware('ADMIN'), async (req, res) => {
   try {
     const { project } = req
     if (!project) {
@@ -179,7 +179,7 @@ router.delete('/:id', authMiddleware, projectAccessMiddleware('ADMIN'), async (r
     }
 
     // Log the action
-    await auditService.logMonitorAction('MONITOR_DELETE', monitor, req.user!.id)
+    await auditService.logMonitorAction('MONITOR_DELETE', monitor, req.user?.id)
 
     res.json({ message: 'Monitor deleted successfully' })
   } catch (error) {

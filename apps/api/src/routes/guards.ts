@@ -1,5 +1,5 @@
 import { Router } from "express";
-import { apiKeyMiddleware, authMiddleware, projectAccessMiddleware } from "../middleware/auth.js";
+import { apiKeyMiddleware, unifiedAuth, projectAccessMiddleware } from "../middleware/auth.js";
 import { GuardsService } from "../services/GuardsService.js";
 import { signToken, verifyToken } from "../utils/encryption.js";
 
@@ -105,7 +105,7 @@ router.patch("/execution/:id", apiKeyMiddleware, async (req, res) => {
  * List all guarded executions for the project (Dashboard)
  * GET /api/guards
  */
-router.get("/", authMiddleware, projectAccessMiddleware("MEMBER"), async (req, res) => {
+router.get("/", unifiedAuth, projectAccessMiddleware("MEMBER"), async (req, res) => {
   try {
     const { project } = req;
     if (!project) return res.status(401).json({ error: "Project context missing" });
@@ -122,7 +122,7 @@ router.get("/", authMiddleware, projectAccessMiddleware("MEMBER"), async (req, r
  * Get detailed execution info (Dashboard)
  * GET /api/guards/:id
  */
-router.get("/:id", authMiddleware, projectAccessMiddleware("MEMBER"), async (req, res) => {
+router.get("/:id", unifiedAuth, projectAccessMiddleware("MEMBER"), async (req, res) => {
   try {
     const { project } = req;
     if (!project) return res.status(401).json({ error: "Project context missing" });

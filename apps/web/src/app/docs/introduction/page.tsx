@@ -66,7 +66,7 @@ export default function IntroDoc() {
             </code>
             <code className="text-sm font-mono text-foreground/40 block selection:bg-acid-lime/30">
               # Monitoring a tunnel (Tunnelight Engine)<br/>
-              sentinel-cli tunnel --id wg0 --token your-token
+              stillup tunnel monitor your-token
             </code>
           </div>
         </section>

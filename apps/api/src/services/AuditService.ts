@@ -51,7 +51,7 @@ export class AuditService {
   async logMonitorAction(
     action: 'MONITOR_CREATE' | 'MONITOR_UPDATE' | 'MONITOR_DELETE',
     monitor: any,
-    userId: string,
+    userId?: string,
     metadata?: any
   ) {
     return this.log({
