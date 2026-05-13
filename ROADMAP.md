@@ -37,9 +37,9 @@ StillUp provides the "Safety Primitives" that prevent autonomous agents and back
 - [x] **Rollback-Aware Execution**: Integrated logic to trigger cleanup/undo actions if a job fails mid-run (`guard.compensate()`).
 - [x] **Webhook Hub**: Centralized visibility for outbound communications and side-effect deduplication.
 - [x] **Safety ROI Dashboard**: Visual analytics for "Dangerous Retries" blocked and financial savings.
-- [/] **Tunnelight Handshake Audits**: Deep telemetry for WireGuard/VPN tunnels to detect "Ghost Connections."
+- [/] **Tunnelight Handshake Audits**: Detection logic for `staleHandshakes` exists; needs UI visibility and granular telemetry.
 - [ ] **Secret Rotation Sentinels**: Automatic alerts for expiring certificates and stale keys detected in job telemetry.
-- [ ] **Jitter & Network Degradation**: Pattern detection for unstable pipes before they fully disconnect.
+- [/] **Jitter & Network Degradation**: Basic `LATENCY_SPIKE` patterns implemented; needs statistical deviation alerts.
 
 ---
 
