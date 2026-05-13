@@ -4,6 +4,7 @@ import { prisma } from '@stillup/db'
 import { subDays, startOfDay, subHours } from 'date-fns'
 import { healthScoreService } from '../services/HealthScoreService.js'
 import { patternDetectionService } from '../services/PatternDetectionService.js'
+import { AnalyticsService } from '../services/AnalyticsService.js'
 
 const router = Router()
 
@@ -135,7 +136,13 @@ router.get('/project/overview', unifiedAuth, projectAccessMiddleware(), async (r
       }))
       .sort((a, b) => a.date.localeCompare(b.date))
 
-    res.json({ monitors, projectTrend })
+    // Phase 2: Add Safety ROI and Deduplication Stats
+    const [safetyStats, deduplicationTrend] = await Promise.all([
+      AnalyticsService.getSafetyROI(projectId, days),
+      AnalyticsService.getDeduplicationTrend(projectId, days)
+    ])
+
+    res.json({ monitors, projectTrend, safetyStats, deduplicationTrend })
   } catch (err) {
     console.error(err)
     res.status(500).json({ error: 'Internal server error' })

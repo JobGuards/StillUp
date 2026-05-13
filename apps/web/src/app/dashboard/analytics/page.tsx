@@ -15,7 +15,8 @@ import {
   ArrowUpRight,
   ArrowDownRight,
   Activity,
-  Zap
+  Zap,
+  Shield
 } from 'lucide-react'
 import { HealthScoreBadge } from '@/components/analytics/HealthScoreBadge'
 import { HeartbeatPulse } from '@/components/analytics/HeartbeatPulse'
@@ -45,6 +46,8 @@ export default function Analytics() {
 
   const monitors = overview?.monitors || []
   const projectTrend = overview?.projectTrend || []
+  const safetyStats = overview?.safetyStats || { preventedDuplicates: 0, estimatedDollarsSaved: 0, retrySuccessRate: 0 }
+  const deduplicationTrend = overview?.deduplicationTrend || []
   
   const stats = useMemo(() => {
     if (monitors.length === 0) return { uptime: 0, totalHeartbeats: 0, failureRate: 0 }
@@ -121,6 +124,37 @@ export default function Analytics() {
           positive={stats.failureRate === 0} 
           icon={<AlertCircle className="w-4 h-4" />} 
         />
+      </div>
+
+      {/* Safety ROI Section (New) */}
+      <div className="space-y-6">
+        <div className="flex items-center gap-3">
+          <Shield className="w-5 h-5 text-acid-lime" />
+          <h2 className="text-xl font-black text-foreground uppercase tracking-tight">Replay Safety ROI</h2>
+        </div>
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+          <MetricCard 
+            title="Duplicates Blocked" 
+            value={safetyStats.preventedDuplicates.toString()} 
+            trend="Idempotent" 
+            positive 
+            icon={<CheckCircle className="w-4 h-4" />} 
+          />
+          <MetricCard 
+            title="Estimated Savings" 
+            value={`$${safetyStats.estimatedDollarsSaved.toLocaleString()}`} 
+            trend="Blocked ROI" 
+            positive 
+            icon={<TrendingUp className="w-4 h-4" />} 
+          />
+          <MetricCard 
+            title="Retry Success Rate" 
+            value={`${safetyStats.retrySuccessRate}%`} 
+            trend="Recovery" 
+            positive 
+            icon={<Activity className="w-4 h-4" />} 
+          />
+        </div>
       </div>
 
       {/* Monitor Intelligence Grid */}
@@ -212,21 +246,43 @@ export default function Analytics() {
           </div>
         </div>
 
-        <div className="space-y-6">
-          <h2 className="text-xl font-black text-foreground uppercase tracking-tight">Active Patterns</h2>
-          <div className="flex flex-col gap-4">
-            {monitors.flatMap((m: any) => m.failurePatterns).length === 0 ? (
-              <div className="glass-panel rounded-2xl p-8 border border-border/10 text-center">
-                <p className="text-muted-foreground font-medium italic">No recurring patterns detected yet.</p>
-              </div>
-            ) : (
-              monitors.flatMap((m: any) => m.failurePatterns).map((pattern: any, i: number) => (
-                <div key={i} className="glass-panel rounded-2xl p-6 border-l-4 border-acid-lime bg-acid-lime/5">
-                  <h4 className="font-bold text-foreground mb-1">{pattern.type}</h4>
-                  <p className="text-sm text-muted-foreground leading-relaxed">{pattern.description}</p>
-                </div>
-              ))
-            )}
+        <div className="glass-panel border border-border/10 rounded-3xl p-8 shadow-xl">
+          <h2 className="text-xl font-black text-foreground mb-8 uppercase tracking-tight flex items-center gap-2">
+            <Shield className="w-5 h-5 text-acid-lime" />
+            Dangerous Retries Blocked
+          </h2>
+          <div className="h-[300px] w-full">
+            <ResponsiveContainer width="100%" height="100%">
+              <AreaChart data={deduplicationTrend}>
+                <defs>
+                  <linearGradient id="colorSkips" x1="0" y1="0" x2="0" y2="1">
+                    <stop offset="5%" stopColor="#d9ff00" stopOpacity={0.3}/>
+                    <stop offset="95%" stopColor="#d9ff00" stopOpacity={0}/>
+                  </linearGradient>
+                </defs>
+                <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="rgba(255,255,255,0.05)" />
+                <XAxis 
+                  dataKey="date" 
+                  tickFormatter={(val) => new Date(val).toLocaleDateString([], { weekday: 'short' })}
+                  axisLine={false}
+                  tickLine={false}
+                  tick={{ fontSize: 10, fontWeight: 900, fill: 'rgba(255,255,255,0.4)' }}
+                />
+                <YAxis axisLine={false} tickLine={false} tick={{ fontSize: 10, fontWeight: 900, fill: 'rgba(255,255,255,0.4)' }} />
+                <RechartsTooltip 
+                  contentStyle={{ backgroundColor: '#111', border: 'none', borderRadius: '12px', fontSize: '10px' }}
+                />
+                <Area 
+                  type="monotone" 
+                  dataKey="count" 
+                  name="Blocked Duplicates"
+                  stroke="#d9ff00" 
+                  strokeWidth={4}
+                  fillOpacity={1} 
+                  fill="url(#colorSkips)" 
+                />
+              </AreaChart>
+            </ResponsiveContainer>
           </div>
         </div>
       </div>

@@ -23,9 +23,25 @@ export default function ReplayGuardDoc() {
           </p>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
             <FeatureItem icon={<Repeat className="w-5 h-5" />} title="Idempotency Enforcement" />
-            <FeatureItem icon={<ShieldAlert className="w-5 h-5" />} title="Double-Payment Protection" />
-            <FeatureItem icon={<Zap className="w-5 h-5" />} title="Zero-Config Retries" />
-            <FeatureItem icon={<ShieldCheck className="w-5 h-5" />} title="Deterministic Replays" />
+            <FeatureItem icon={<ShieldAlert className="w-5 h-5" />} title="Rollback-Aware Workflows" />
+            <FeatureItem icon={<Zap className="w-5 h-5" />} title="Exactly-Once Semantics" />
+            <FeatureItem icon={<ShieldCheck className="w-5 h-5" />} title="Safety ROI Tracking" />
+          </div>
+        </section>
+
+        <section className="space-y-12">
+          <h2 className="text-4xl font-black uppercase tracking-tight text-foreground italic">Rollback-Aware Workflows</h2>
+          <p className="leading-relaxed text-muted-foreground">
+            Sometimes a job fails mid-way, leaving your system in an inconsistent state. ReplayGuard allows you to register **Compensation Hooks** that run automatically if the job terminates unsuccessfully.
+          </p>
+          <div className="glass-panel border border-border/10 rounded-[2.5rem] p-8 bg-foreground/[0.02]">
+            <pre className="text-sm font-mono text-foreground/80 leading-relaxed overflow-x-auto">
+{`await guard.compensate('PAYMENT', 'stripe-charge', inputs, {
+  type: 'HTTP_DELETE',
+  target: \`https://api.stripe.com/v1/refunds/\${paymentId}\`,
+  payload: { reason: 'Job failed' }
+});`}
+            </pre>
           </div>
         </section>
 

@@ -69,6 +69,44 @@ program
 const guard = program.command('guard').description('ReplayGuard management commands');
 
 guard
+  .command('list')
+  .description('List recent guarded executions')
+  .option('-n, --limit <number>', 'Number of executions to show', '10')
+  .action(async (options: { limit: string }) => {
+    const baseUrl = (config.get('baseUrl') as string) || 'http://localhost:4040';
+    const apiKey = config.get('apiKey');
+    
+    if (!apiKey) {
+      console.log(chalk.red('Error: Please run `stillup login <apiKey>` first.'));
+      return;
+    }
+
+    const spinner = ora('Scanning Replay Safety Memory...').start();
+    try {
+      const res = await axios.get(`${baseUrl}/api/guards`, {
+        headers: { 'x-api-key': apiKey as string }
+      });
+      spinner.stop();
+      
+      const executions = res.data;
+      const limit = parseInt(options.limit);
+      
+      console.log(chalk.bold(`\n  🛡️  RECENT GUARDED EXECUTIONS (Showing last ${limit})\n`));
+
+      executions.slice(0, limit).forEach((exe: any) => {
+        const status = exe.status === 'SUCCESS' ? chalk.green('● SUCCESS') : chalk.red('● ' + exe.status);
+        const attempt = exe.attempt > 1 ? chalk.yellow(`[Retry #${exe.attempt}]`) : chalk.dim('[Initial]');
+        const date = new Date(exe.startedAt).toLocaleTimeString();
+        
+        console.log(`  ${chalk.dim(date)}  ${status}  ${chalk.cyan(exe.monitor.name.padEnd(20))} ${attempt} ${chalk.dim(exe.id)}`);
+      });
+      console.log('');
+    } catch (error: any) {
+      spinner.fail(chalk.red(`Failed to fetch guards: ${error.message}`));
+    }
+  });
+
+guard
   .command('status')
   .description('Check status of a guarded execution')
   .argument('<executionId>', 'Execution ID to check')
@@ -93,7 +131,16 @@ guard
       console.log(`  Monitor:   ${chalk.cyan(exe.monitor.name)}`);
       console.log(`  Status:    ${exe.status === 'SUCCESS' ? chalk.green('SUCCESS') : chalk.red(exe.status)}`);
       console.log(`  Attempt:   ${exe.attempt}`);
-      console.log(`  Effects:   ${exe.sideEffects.length} guarded\n`);
+      console.log(`  Effects:   ${exe.sideEffects.length} guarded`);
+      
+      if (exe.rollbacks && exe.rollbacks.length > 0) {
+        console.log(chalk.bold(`\n  🔄 ROLLBACK ACTIONS (${exe.rollbacks.length})`));
+        exe.rollbacks.forEach((rb: any) => {
+          const rbStatus = rb.status === 'COMPLETED' ? chalk.green('COMPLETED') : chalk.yellow(rb.status);
+          console.log(`  ${chalk.dim('●')} ${rb.target} (${rb.type}) -> ${rbStatus}`);
+        });
+      }
+      console.log('');
     } catch (error: any) {
       spinner.fail(chalk.red(`Failed to fetch status: ${error.message}`));
     }
@@ -246,7 +293,9 @@ monitor
   .option('-n, --name <name>', 'Monitor name')
   .option('-e, --endpoint <url>', 'Public endpoint or target URL')
   .option('--threshold <threshold>', 'Handshake or grace threshold (e.g., 180s)', '180s')
-  .action(async (options: { type: string, name: string, endpoint?: string, threshold: string }) => {
+  .option('--max-attempts <number>', 'ReplayGuard max retry attempts', '3')
+  .option('--backoff <ms>', 'Initial backoff in ms', '1000')
+  .action(async (options: { type: string, name: string, endpoint?: string, threshold: string, maxAttempts: string, backoff: string }) => {
     const baseUrl = (config.get('baseUrl') as string) || 'http://localhost:4040';
     const apiKey = config.get('apiKey');
 
@@ -283,6 +332,13 @@ monitor
           handshakeThreshold: thresholdSeconds
         };
       }
+
+      // Add ReplayGuard Retry Policy
+      payload.retryPolicy = {
+        maxAttempts: parseInt(options.maxAttempts),
+        backoffMs: parseInt(options.backoff),
+        multiplier: 2
+      };
 
       const res = await axios.post(`${baseUrl}/api/monitors`, payload, {
         headers: { 'x-api-key': apiKey as string }

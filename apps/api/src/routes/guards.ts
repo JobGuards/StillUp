@@ -2,6 +2,7 @@ import { Router } from "express";
 import { apiKeyMiddleware, unifiedAuth, projectAccessMiddleware } from "../middleware/auth.js";
 import { GuardsService } from "../services/GuardsService.js";
 import { signToken, verifyToken } from "../utils/encryption.js";
+import { prisma } from "@stillup/db";
 
 const router = Router();
 
@@ -26,7 +27,8 @@ router.post("/session", apiKeyMiddleware, async (req, res) => {
     res.json({
       executionId: execution.id,
       attempt: execution.attempt,
-      token: `${execution.id}.${signature}`
+      token: `${execution.id}.${signature}`,
+      retryPolicy: (execution as any).retryPolicy
     });
   } catch (error) {
     console.error("[Guards] Session initialization error:", error);
@@ -67,8 +69,42 @@ router.post("/verify", apiKeyMiddleware, async (req, res) => {
     res.json(result);
   } catch (error: any) {
     console.error("[Guards] Verification error:", error.message);
-    console.error(error.stack);
     res.status(500).json({ error: "Failed to verify side effect", details: error.message });
+  }
+});
+
+/**
+ * Register a rollback action
+ * POST /api/guards/rollback/register
+ */
+router.post("/rollback/register", apiKeyMiddleware, async (req, res) => {
+  try {
+    const { executionId, fingerprint, token, rollback } = req.body;
+
+    if (!executionId || !fingerprint || !rollback) {
+      return res.status(400).json({ error: "executionId, fingerprint, and rollback are required" });
+    }
+
+    // Verify session token
+    if (token) {
+      const [id, sig] = token.split('.');
+      if (id !== executionId || !verifyToken(id, sig)) {
+        return res.status(401).json({ error: "Invalid session token" });
+      }
+    }
+
+    const result = await GuardsService.registerRollback(
+      executionId,
+      fingerprint,
+      rollback.type,
+      rollback.target,
+      rollback.payload
+    );
+
+    res.json(result);
+  } catch (error: any) {
+    console.error("[Guards] Rollback registration error:", error.message);
+    res.status(500).json({ error: "Failed to register rollback", details: error.message });
   }
 });
 
@@ -79,7 +115,7 @@ router.post("/verify", apiKeyMiddleware, async (req, res) => {
 router.patch("/execution/:id", apiKeyMiddleware, async (req, res) => {
   try {
     const { id } = req.params;
-    const { status, token } = req.body;
+    const { status, token, shouldRollback } = req.body;
 
     if (!status || !["SUCCESS", "FAILED"].includes(status)) {
       return res.status(400).json({ error: "Invalid status" });
@@ -93,11 +129,43 @@ router.patch("/execution/:id", apiKeyMiddleware, async (req, res) => {
       }
     }
 
-    await GuardsService.completeExecution(id, status);
+    await GuardsService.completeExecution(id, status, shouldRollback);
     res.json({ success: true });
   } catch (error) {
     console.error("[Guards] Completion error:", error);
     res.status(500).json({ error: "Failed to complete execution" });
+  }
+});
+
+/**
+ * List all side effects for a project (Dashboard)
+ * GET /api/guards/side-effects
+ */
+router.get("/side-effects", unifiedAuth, projectAccessMiddleware(), async (req: any, res: any) => {
+  try {
+    const projectId = req.project?.id || req.query.projectId;
+    const { type } = req.query;
+
+    const sideEffects = await (prisma as any).guardSideEffect.findMany({
+      where: {
+        projectId,
+        ...(type ? { type: type as string } : {})
+      },
+      include: {
+        execution: {
+          include: {
+            monitor: { select: { name: true } }
+          }
+        }
+      },
+      orderBy: { executedAt: "desc" },
+      take: 100
+    });
+
+    res.json(sideEffects);
+  } catch (error: any) {
+    console.error("[Guards] Side-effects list error:", error.message);
+    res.status(500).json({ error: "Failed to fetch side effects" });
   }
 });
 

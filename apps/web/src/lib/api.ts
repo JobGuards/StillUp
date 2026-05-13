@@ -114,6 +114,12 @@ class ApiClient {
   async getGuardedExecution(id: string): Promise<any> {
     return this.fetch<any>(`/guards/${id}`)
   }
+  
+  async getProjectSideEffects(params: { type?: string } = {}): Promise<any[]> {
+    const searchParams = new URLSearchParams()
+    if (params.type) searchParams.append('type', params.type)
+    return this.fetch<any[]>(`/guards/side-effects?${searchParams.toString()}`)
+  }
 
   // Project methods
   async upgradePlan(projectId: string, plan: string): Promise<any> {

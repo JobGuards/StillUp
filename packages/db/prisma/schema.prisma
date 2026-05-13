@@ -173,6 +173,7 @@ model Monitor {
   heartbeatToken   String        @unique
   enabled          Boolean       @default(true)
   publicVisibility Boolean       @default(false)
+  retryPolicy      Json?         // { maxAttempts: 3, backoffMs: 1000, multiplier: 2 }
 
   lastHeartbeatAt DateTime?
   nextExpectedAt  DateTime?
@@ -377,6 +378,7 @@ model GuardExecution {
 
   monitor         Monitor           @relation(fields: [monitorId], references: [id])
   sideEffects     GuardSideEffect[]
+  rollbacks       GuardRollback[]
 
   @@index([monitorId, status])
   @@index([externalId])
@@ -396,8 +398,27 @@ model GuardSideEffect {
 
   execution       GuardExecution @relation(fields: [executionId], references: [id])
   project         Project        @relation(fields: [projectId], references: [id])
+  rollback        GuardRollback?
 
   @@unique([executionId, fingerprint])
   @@index([projectId, fingerprint])
+  @@index([executionId])
+}
+
+model GuardRollback {
+  id              String    @id @default(cuid())
+  executionId     String
+  sideEffectId    String    @unique
+  type            String    // e.g., "HTTP_DELETE", "FUNCTION_CALL"
+  target          String
+  payload         Json?
+  status          String    @default("PENDING") // "PENDING", "COMPLETED", "FAILED"
+  error           String?
+  executedAt      DateTime?
+  createdAt       DateTime  @default(now())
+
+  execution       GuardExecution @relation(fields: [executionId], references: [id])
+  sideEffect      GuardSideEffect @relation(fields: [sideEffectId], references: [id])
+
   @@index([executionId])
 }

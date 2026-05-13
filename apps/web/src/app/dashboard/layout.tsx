@@ -8,7 +8,7 @@ import { useRouter, usePathname } from 'next/navigation'
 import { useAuth } from '@/contexts/AuthContext'
 import { Button } from '@/components/ui/button'
 import { Logo } from "@/components/Logo"
-import { Menu, X, LogOut, Settings, Home, BarChart3, Clock, Loader2, ShieldCheck, Activity, AlertTriangle } from 'lucide-react'
+import { Menu, X, LogOut, Settings, Home, BarChart3, Clock, Loader2, ShieldCheck, Activity, AlertTriangle, Globe } from 'lucide-react'
 
 export default function DashboardLayout({
   children,
@@ -97,6 +97,7 @@ export default function DashboardLayout({
             <SidebarLink href="/dashboard/activity" icon={<Clock className="w-4 h-4" />} label="Activity" active={pathname === '/dashboard/activity'} />
             <SidebarLink href="/dashboard/incidents" icon={<AlertTriangle className="w-4 h-4" />} label="Incidents" active={pathname === '/dashboard/incidents'} />
             <SidebarLink href="/dashboard/guards" icon={<ShieldCheck className="w-4 h-4" />} label="Replays" active={pathname === '/dashboard/guards'} />
+            <SidebarLink href="/dashboard/webhooks" icon={<Globe className="w-4 h-4" />} label="Webhooks" active={pathname === '/dashboard/webhooks'} />
             <SidebarLink href="/dashboard/analytics" icon={<BarChart3 className="w-4 h-4" />} label="Analytics" active={pathname === '/dashboard/analytics'} />
             <div className="border-t border-border/5 my-8" />
             <SidebarLink href="/dashboard/settings" icon={<Settings className="w-4 h-4" />} label="Settings" active={pathname?.startsWith('/dashboard/settings')} />

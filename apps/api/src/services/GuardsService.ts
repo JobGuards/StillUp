@@ -31,7 +31,7 @@ export class GuardsService {
       }
     }
 
-    return await prisma.guardExecution.create({
+    const execution = await prisma.guardExecution.create({
       data: {
         monitorId,
         externalId,
@@ -39,6 +39,11 @@ export class GuardsService {
         status: "RUNNING",
       },
     });
+
+    return {
+      ...execution,
+      retryPolicy: monitor.retryPolicy,
+    };
   }
 
   /**
@@ -166,33 +171,124 @@ export class GuardsService {
     }
 
     // Record this side effect as part of the current execution
-    await prisma.guardSideEffect.create({
-      data: {
-        executionId,
-        projectId,
-        fingerprint,
-        type,
-        target,
-        inputHash,
-        status: "COMPLETED",
-        metadata
-      },
-    });
+    try {
+      await prisma.guardSideEffect.create({
+        data: {
+          executionId,
+          projectId,
+          fingerprint,
+          type,
+          target,
+          inputHash,
+          status: "COMPLETED",
+          metadata
+        },
+      });
+    } catch (error: any) {
+      // Handle P2002 (Unique constraint failed) - this means another thread/process 
+      // just registered this side effect. We should treat it as a SKIP.
+      if (error.code === 'P2002') {
+        const raceEffect = await prisma.guardSideEffect.findFirst({
+          where: searchCriteria,
+          orderBy: { executedAt: "desc" }
+        });
+        
+        return { 
+          action: "SKIP" as const, 
+          cachedResult: raceEffect?.metadata || { message: "Already executed (race condition handled)" } 
+        };
+      }
+      throw error;
+    }
 
     return { action: "EXECUTE" as const };
   }
 
   /**
-   * Finalizes the execution status.
+   * Registers a rollback action for a specific side effect.
    */
-  static async completeExecution(executionId: string, status: "SUCCESS" | "FAILED") {
-    return await prisma.guardExecution.update({
+  static async registerRollback(
+    executionId: string,
+    fingerprint: string,
+    type: string,
+    target: string,
+    payload: any = null
+  ) {
+    const sideEffect = await prisma.guardSideEffect.findUnique({
+      where: { executionId_fingerprint: { executionId, fingerprint } }
+    });
+
+    if (!sideEffect) {
+      throw new Error("Side effect not found for rollback registration");
+    }
+
+    return await prisma.guardRollback.create({
+      data: {
+        executionId,
+        sideEffectId: sideEffect.id,
+        type,
+        target,
+        payload,
+        status: "PENDING",
+      }
+    });
+  }
+
+  /**
+   * Finalizes the execution status. 
+   * If FAILED, it optionally triggers all registered rollbacks.
+   */
+  static async completeExecution(executionId: string, status: "SUCCESS" | "FAILED", shouldRollback: boolean = false) {
+    const execution = await prisma.guardExecution.update({
       where: { id: executionId },
       data: {
         status,
         finishedAt: new Date(),
       },
     });
+
+    if (status === "FAILED" && shouldRollback) {
+      await this.triggerRollbacks(executionId);
+    }
+
+    return execution;
+  }
+
+  /**
+   * Triggers all registered rollbacks for an execution.
+   * In production, this might be offloaded to a background queue.
+   */
+  static async triggerRollbacks(executionId: string) {
+    const rollbacks = await prisma.guardRollback.findMany({
+      where: { executionId, status: "PENDING" },
+      include: { sideEffect: true }
+    });
+
+    console.log(`[ReplayGuard] Triggering ${rollbacks.length} rollbacks for execution ${executionId}`);
+
+    for (const rb of rollbacks) {
+      try {
+        // Here we would actually execute the rollback logic (e.g., HTTP call)
+        // For now, we mark them as COMPLETED to simulate the effect.
+        await prisma.guardRollback.update({
+          where: { id: rb.id },
+          data: {
+            status: "COMPLETED",
+            executedAt: new Date(),
+          }
+        });
+        console.log(`[ReplayGuard] Rollback COMPLETED for ${rb.sideEffect.target} (${rb.type})`);
+      } catch (error: any) {
+        console.error(`[ReplayGuard] Rollback FAILED for ${rb.id}:`, error.message);
+        await prisma.guardRollback.update({
+          where: { id: rb.id },
+          data: {
+            status: "FAILED",
+            error: error.message
+          }
+        });
+      }
+    }
   }
 
   /**
@@ -214,6 +310,7 @@ export class GuardsService {
         _count: {
           select: {
             sideEffects: true,
+            rollbacks: true,
           },
         },
       },
@@ -225,7 +322,7 @@ export class GuardsService {
   }
 
   /**
-   * Fetches detailed information for a single execution, including side effects.
+   * Fetches detailed information for a single execution, including side effects and rollbacks.
    */
   static async getExecutionDetails(executionId: string, projectId: string) {
     const execution = await prisma.guardExecution.findUnique({
@@ -236,7 +333,11 @@ export class GuardsService {
           orderBy: {
             executedAt: "asc",
           },
+          include: {
+            rollback: true
+          }
         },
+        rollbacks: true,
       },
     });
 
