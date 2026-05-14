@@ -9,7 +9,9 @@
   "types": "./src/index.d.ts",
   "scripts": {
     "build": "tsc",
-    "dev": "tsc -w"
+    "dev": "tsc -w",
+    "test": "echo \"No tests yet\"",
+    "lint": "echo \"No lint yet\""
   },
   "dependencies": {
     "zod": "3.25.76"

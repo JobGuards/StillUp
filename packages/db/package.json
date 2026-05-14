@@ -8,7 +8,9 @@
     ".": "./src/index.ts"
   },
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "build": "prisma generate",
+    "test": "echo \"No tests yet\"",
+    "lint": "echo \"No lint yet\""
   },
   "keywords": [],
   "author": "",
