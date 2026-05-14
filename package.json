@@ -8,7 +8,7 @@
     "dev": "concurrently \"pnpm --filter api dev\" \"pnpm --filter web dev\"",
     "build": "pnpm -r build",
     "test": "pnpm -r test",
-    "lint": "pnpm -r lint",
+    "lint": "pnpm -r run --if-present check-lint",
     "ci": "pnpm build && pnpm test",
     "release": "pnpm build && changeset publish"
   },

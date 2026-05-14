@@ -10,7 +10,8 @@
   "scripts": {
     "build": "prisma generate",
     "test": "echo \"No tests yet\"",
-    "lint": "echo \"No lint yet\""
+    "lint": "echo \"No lint yet\"",
+    "check-lint": "echo \"No lint yet\""
   },
   "keywords": [],
   "author": "",

@@ -20,7 +20,8 @@
     "build": "tsup src/index.ts --format cjs,esm --dts --clean",
     "dev": "tsup src/index.ts --format cjs,esm --dts --watch --clean",
     "test": "echo \"No tests yet\"",
-    "lint": "echo \"No lint yet\""
+    "lint": "echo \"No lint yet\"",
+    "check-lint": "echo \"No lint yet\""
   },
   "dependencies": {
     "object-hash": "^3.0.0"
