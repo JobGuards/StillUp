@@ -3,7 +3,6 @@ import request from 'supertest'
 import { createApp } from '../../src/server.ts'
 import { apiKeyMiddleware } from '../../src/middleware/auth.ts'
 import { prisma } from '@stillup/db'
-import { Role } from '@prisma/client'
 
 vi.mock('@stillup/db', () => ({
   prisma: {
