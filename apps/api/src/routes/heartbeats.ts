@@ -102,13 +102,9 @@ const handleHeartbeat = async (req: any, res: any) => {
       })
     })
   } catch (error: any) {
-    const errorMsg = `[${new Date().toISOString()}] CRITICAL: Heartbeat ingestion error: ${error.message}\n${error.stack}\n`;
-    try {
-      import('fs').then(fs => fs.appendFileSync('error_log.txt', errorMsg));
-    } catch (e) {}
     console.error('CRITICAL: Heartbeat ingestion error:', error.message);
     console.error(error.stack);
-    res.status(500).json({ error: 'Internal server error', details: error.message })
+    res.status(500).json({ error: 'Internal server error' })
   }
 }
 

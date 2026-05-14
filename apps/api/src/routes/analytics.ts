@@ -180,6 +180,32 @@ router.patch('/incidents/:id/resolve', authMiddleware, async (req: any, res: any
     const { id } = req.params
     const { resolutionNotes, resolutionCategory } = req.body
 
+    // 1. Fetch incident to find its project
+    const incident = await (prisma as any).incident.findUnique({
+      where: { id },
+      include: { monitor: { select: { projectId: true } } },
+    })
+
+    if (!incident) {
+      res.status(404).json({ error: 'Incident not found' })
+      return
+    }
+
+    // 2. Verify user has access to this project
+    const membership = await (prisma as any).projectMember.findUnique({
+      where: {
+        projectId_userId: {
+          projectId: incident.monitor.projectId,
+          userId: req.user.id,
+        },
+      },
+    })
+
+    if (!membership) {
+      res.status(403).json({ error: 'You do not have access to this incident' })
+      return
+    }
+
     const updated = await (prisma as any).incident.update({
       where: { id },
       data: {

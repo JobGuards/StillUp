@@ -15,6 +15,7 @@ import publicRoutes from "./routes/public.js";
 import stripeRoutes from "./routes/stripe.js";
 import guardRoutes from "./routes/guards.js";
 import apiKeyRoutes from "./routes/api-keys.js";
+import projectRoutes from "./routes/projects.js";
 import { apiRateLimiter, authRateLimiter } from "./middleware/rateLimit.js";
 import { authMiddleware, projectAccessMiddleware } from "./middleware/auth.js";
 import { prisma } from "@stillup/db";
@@ -74,34 +75,8 @@ export function createApp() {
   // 13. Public routes (No Auth)
   app.use("/api/public", publicRoutes);
 
-  // 14. Project management - upgrade plan
-  app.post("/api/projects/plan", async (req, res) => {
-    console.log("[API] >>> /api/projects/plan HIT <<<", req.body);
-    try {
-      const { projectId, plan } = req.body;
-
-      if (!projectId || !plan) {
-        res.status(400).json({ error: "projectId and plan are required" });
-        return;
-      }
-
-      if (!['FREE', 'PRO', 'ENTERPRISE'].includes(plan)) {
-        res.status(400).json({ error: "Invalid plan. Must be FREE, PRO, or ENTERPRISE" });
-        return;
-      }
-
-      const updatedProject = await prisma.project.update({
-        where: { id: projectId },
-        data: { plan: plan as any }
-      });
-
-      console.log("[API] Plan upgrade success:", updatedProject.id, plan);
-      res.json({ success: true, project: updatedProject });
-    } catch (error: any) {
-      console.error("[API] Plan upgrade error:", error.message);
-      res.status(500).json({ error: error.message || "Internal server error" });
-    }
-  });
+  // 14. Project management
+  app.use("/api/projects", projectRoutes);
 
 
   // 15. Billing routes

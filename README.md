@@ -13,7 +13,7 @@
 
 ## ⚡ Reliability for the AI Era
 
-StillUp is the world's first **Replay-Safe Infrastructure** platform. While traditional monitors tell you when something is down, StillUp ensures that **retrying failed systems is always safe.** 
+StillUp is the **lightweight Replay-Safe Infrastructure** platform. While traditional monitors tell you when something is down, StillUp ensures that **retrying failed systems is always safe.** 
 
 Built specifically for the reliability problems created by autonomous agents and complex background jobs, StillUp provides the "Safety Primitives" needed to prevent duplicate side effects, redundant charges, and cascading infrastructure failures.
 
