@@ -2,7 +2,7 @@
 
 import React, { useState } from 'react'
 import useSWR from 'swr'
-import { useSearchParams } from 'next/navigation'
+
 import { api } from '@/lib/api'
 import { UptimeChart, FailureDistributionChart, HealthScoreGauge, FailurePatternsPanel } from '@/components/analytics/AnalyticsCharts'
 import { IncidentTimeline } from '@/components/analytics/IncidentTimeline'

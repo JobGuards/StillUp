@@ -9,15 +9,12 @@
   "types": "./src/index.d.ts",
   "scripts": {
     "build": "tsc",
-    "dev": "tsc -w",
-    "test": "echo \"No tests yet\"",
-    "lint": "echo \"No lint yet\""
+    "dev": "tsc -w"
   },
   "dependencies": {
     "zod": "3.25.76"
   },
   "devDependencies": {
-    "typescript": "^5.0.0",
-    "@types/node": "^22.7.5"
+    "typescript": "^5.0.0"
   }
 }

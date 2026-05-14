@@ -23,7 +23,7 @@ import {
   Activity
 } from 'lucide-react'
 
-export default function Payment() {
+function PaymentContent() {
   const { user, isLoading, activeOrganization, refresh } = useAuth()
   const searchParams = useSearchParams()
   const router = useRouter()
@@ -475,5 +475,25 @@ function Benefit({ icon, label }: { icon: React.ReactNode, label: string }) {
       </div>
       <span className="text-[10px] font-black uppercase tracking-widest text-foreground/70 group-hover:text-foreground transition-colors italic">{label}</span>
     </div>
+  )
+}
+
+export default function Payment() {
+  return (
+    <React.Suspense fallback={
+      <div className="h-screen flex flex-col items-center justify-center bg-background bg-tech-grid">
+        <div className="relative">
+          <div className="w-16 h-16 border-2 border-acid-lime/20 border-t-acid-lime rounded-full animate-spin" />
+          <div className="absolute inset-0 flex items-center justify-center">
+            <Activity className="w-6 h-6 text-acid-lime animate-pulse" />
+          </div>
+        </div>
+        <p className="mt-8 text-[10px] font-black uppercase tracking-[0.4em] text-acid-lime italic animate-pulse">
+          Loading_Secure_Checkout...
+        </p>
+      </div>
+    }>
+      <PaymentContent />
+    </React.Suspense>
   )
 }
