@@ -68,15 +68,21 @@ export default function LandingPage() {
         <main className="flex-grow pt-40 pb-xl px-margin max-w-7xl mx-auto w-full flex flex-col items-center gap-xl relative z-10">
           {/* Hero Section */}
           <section className="text-center flex flex-col items-center gap-lg max-w-4xl mx-auto mt-8">
-            <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full border border-acid-lime/20 bg-acid-lime/5 backdrop-blur text-xs font-code-md text-acid-lime mb-4 shadow-[0_0_15px_rgba(var(--theme-lime-rgb),0.1)]">
-              <span className="w-2 h-2 rounded-full bg-acid-lime animate-pulse"></span>
-              <span className="tracking-[0.2em] uppercase text-[10px] font-black italic">ReplayGuard™: Exactly-Once Active</span>
+            <div className="flex flex-col md:flex-row items-center gap-3 mb-4">
+              <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full border border-acid-lime/20 bg-acid-lime/5 backdrop-blur text-xs font-code-md text-acid-lime shadow-[0_0_15px_rgba(var(--theme-lime-rgb),0.1)]">
+                <span className="w-2 h-2 rounded-full bg-acid-lime animate-pulse"></span>
+                <span className="tracking-[0.2em] uppercase text-[10px] font-black italic">Exactly-Once Active</span>
+              </div>
+              <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full border border-white/10 bg-white/5 backdrop-blur text-xs font-code-md text-muted-foreground">
+                <span className="tracking-[0.2em] uppercase text-[10px] font-black italic">100% Self-Hostable & Privacy-First</span>
+              </div>
             </div>
             <h1 className="text-headline-xl font-headline-xl text-foreground uppercase tracking-tight">
-              Exactly-Once Execution.<br/> <span className="glow-lime font-black">For AI Agents.</span>
+              Sovereign <span className="glow-lime font-black">Reliability.</span><br/> 
+              <span className="text-foreground/40 font-black italic">For Agents & Homelabs.</span>
             </h1>
             <p className="text-body-lg font-body-lg text-muted-foreground max-w-2xl mt-2">
-              StillUp prevents duplicate side effects in AI agents, background jobs, and webhooks. <b>Retry anything safely</b> - no double charges, no corrupt state, no data loss.
+              StillUp is the safety layer for non-deterministic systems. Prevent duplicate side effects, secure your local infrastructure, and ensure 100% data sovereignty.
             </p>
             <div className="flex flex-col items-center gap-md mt-10">
               <Link href="/auth/signup" className="bg-acid-lime text-primary-foreground px-xl py-sm rounded-lg font-black uppercase tracking-widest text-sm shadow-[0_0_20px_rgba(var(--theme-lime-rgb),0.3)] hover:shadow-[0_0_40px_rgba(var(--theme-lime-rgb),0.6)] transition-all duration-500 flex items-center gap-xs transform hover:-translate-y-1">

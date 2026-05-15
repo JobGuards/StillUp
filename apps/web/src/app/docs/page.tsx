@@ -28,8 +28,8 @@ export default function DocsPage() {
       title: 'Infrastructure',
       icon: <Layers className="w-6 h-6" />,
       items: [
-        { title: 'Architecture', href: '/docs/architecture', description: 'A deep dive into our modular, scalable stack.' },
-        { title: 'Deployment', href: '/docs/architecture#deployment', description: 'Self-hosting and cloud deployment strategies.' },
+        { title: 'Self-Hosted Guide', href: '/docs/self-hosting', description: 'Strategies for homelabs, media stacks, and local AI stability.' },
+        { title: 'Architecture & Deployment', href: '/docs/architecture', description: 'A deep dive into our modular stack and advanced deployment strategies.' },
       ]
     },
     {

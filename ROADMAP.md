@@ -43,7 +43,19 @@ StillUp provides the "Safety Primitives" that prevent autonomous agents and back
 
 ---
 
-## 🟣 Phase 4: Autonomous Sentinel Hub (Future)
+## 🟠 Phase 4: Sovereign Infrastructure (Self-Hoster Ready) - IN PROGRESS
+*Optimizing for privacy-first, local-only, and consumer-hardware deployments.*
+
+- [x] **Homelab Use-Case Suite**: Dedicated documentation for Home Assistant, Media Scraping, and Local AI.
+- [x] **Privacy-First "Sovereign" Mode**: Ensure 100% offline functionality with zero external telemetry.
+- [x] **One-Click Docker Stack**: Unified `docker-compose.yml` for instant local deployment.
+- [x] **Consumer Hardware Optimization**: Performance tuning for Raspberry Pi and low-resource mini-PCs.
+- [x] **Local-First CLI Flow**: Prioritize custom instance URLs in CLI documentation and authentication.
+- [x] **"Sovereign" UI Identity**: Aesthetic adjustments to emphasize local ownership over SaaS dependence.
+
+---
+
+## 🟣 Phase 5: Autonomous Sentinel Hub (Future)
 *The centralized control plane for autonomous reliability.*
 
 - [ ] **Memory-Aware Status Pages**: Public pages that show not just "Up/Down", but "Retry Safety" and "Rollback Health."
@@ -66,3 +78,4 @@ StillUp provides the "Safety Primitives" that prevent autonomous agents and back
 | Rollback Engine | Infrastructure Memory | ✅ COMPLETED |
 | Operational Memory | Infrastructure Memory | ✅ COMPLETED |
 | Tunnelight Engine | Telemetry | ✅ COMPLETED |
+| Sovereign Infrastructure | Self-Hosting | 🚧 IN PROGRESS |

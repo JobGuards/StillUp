@@ -11,48 +11,50 @@
 
 ---
 
-## ⚡ Reliability for the AI Era
+## 🛡️ Sovereign Reliability for Autonomous Systems
 
-StillUp is the **lightweight Replay-Safe Infrastructure** platform. While traditional monitors tell you when something is down, StillUp ensures that **retrying failed systems is always safe.** 
+StillUp is a **lightweight, privacy-first Safety Layer** for background jobs, AI agents, and homelab automation. It ensures that retrying failed systems is always safe by preventing duplicate side effects and providing exactly-once execution.
 
-Built specifically for the reliability problems created by autonomous agents and complex background jobs, StillUp provides the "Safety Primitives" needed to prevent duplicate side effects, redundant charges, and cascading infrastructure failures.
+### ✨ Key Sovereign Features
 
-### ✨ The "Sharp Wedge" Features
+StillUp provides the "Safety Primitives" needed for high-stakes autonomous systems:
 
-- 🛡️ **ReplayGuard™ (Exactly-Once Execution)**: The first safety layer for AI Agents and background jobs. Prevent duplicate side effects (double payments, double emails, redundant API calls) during retries with cryptographic fingerprinting.
+- 🛡️ **ReplayGuard™ (Exactly-Once Execution)**: Prevent duplicate side effects (double payments, double emails, redundant API calls) during retries with cryptographic fingerprinting.
 - 🛰️ **Infrastructure Memory**: StillUp tracks every side effect, handshake, and heartbeat. It provides a "Decision Engine" for your jobs: *Has this already happened? Should I skip it?*
-- 🤖 **AI Agent Retry Protection**: Dedicated SDK wrappers to protect high-cost LLM generations and agentic actions from non-deterministic failures.
+- 🤖 **Agent Protection**: Dedicated SDK wrappers to protect high-cost LLM generations and agentic actions from non-deterministic failures.
 - 🛠️ **Automated Rollbacks**: Register compensation hooks (`onRollback`) that trigger automatically when jobs fail, ensuring state consistency across complex autonomous runs.
-- 💹 **Safety ROI Dashboard**: Visualize the value of blocked dangerous retries, estimated engineer hours saved, and real-time project health scores.
-- 🌐 **Webhook Hub**: Centralized visibility for all outbound communications, ensuring idempotency and security for your integration layer.
-- 🎨 **Sentinel Hub UI**: A premium, glassmorphic command center to visualize your "Execution Memory" and infrastructure health.
+- 🌐 **Webhook Sentinel**: Centralized visibility for all outbound communications, ensuring idempotency and security for your integration layer.
+- 🎨 **Sentinel Hub**: A premium, glassmorphic command center to visualize your "Execution Memory" and homelab health.
 
-## 💻 StillUp CLI
+## 💻 StillUp CLI (Local-First)
 
-The StillUp CLI is the easiest way to monitor your infrastructure from the terminal.
+The CLI is the fastest way to monitor your local infrastructure:
 
 ```bash
-# Install globally (once published)
-npm install -g @stillup/cli
+# Point to your local instance
+stillup login --url http://localhost:3000 --key YOUR_KEY
 
-# Login to your project
-stillup login YOUR_API_KEY
-
-# Pulse a heartbeat
+# Pulse a heartbeat (Cron/Job Monitoring)
 stillup hb your-monitor-token
 
 # Monitor a secure tunnel (Tunnelight Engine)
-stillup tunnel monitor your-tunnel-token --target 8.8.8.8
+stillup tunnel monitor your-tunnel-token --target 10.0.0.1
 ```
 
-## 🚀 Quick Start
+## 🚀 Sovereign Quick Start (Docker)
 
-### 1. Clone & Install
+The fastest way to deploy StillUp is via Docker.
+
 ```bash
-git clone https://github.com/your-org/stillup.git
-cd stillup
-pnpm install
+# 1. Clone the repository
+git clone https://github.com/StillUp/StillUp.git && cd StillUp
+
+# 2. Launch the stack
+docker-compose up -d
 ```
+Visit `http://localhost:3000` to access your local Sentinel Hub.
+
+### Alternative: Manual Install
 
 ### 2. Configure Environment
 ```bash

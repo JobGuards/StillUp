@@ -105,7 +105,7 @@ export default function DashboardLayout({
 
           <div className="mt-auto p-4 mx-8 mb-8 glass-panel border-acid-lime/10 rounded-2xl space-y-3">
              <div className="flex flex-col gap-2 justify-between items-center">
-                <span className="text-[9px] font-black uppercase tracking-[0.2em] text-muted-foreground italic">Protocol_Mode</span>
+                <span className="text-[9px] font-black uppercase tracking-[0.2em] text-muted-foreground italic">Sovereign_Deployment</span>
                 <span className={`text-[9px] font-black px-2 py-0.5 rounded-full ${
                   isPro ? 'bg-acid-lime text-[#0f1a14]' : 'bg-acid-lime/20 text-acid-lime border border-acid-lime/30'
                 }`}>
@@ -114,7 +114,7 @@ export default function DashboardLayout({
              </div>
              {!isPro && (
                <Link href="/pricing" className="block w-full py-2 bg-foreground text-background rounded-xl text-center text-[10px] font-black uppercase tracking-widest hover:opacity-90 transition-all">
-                  Switch to Cloud
+                  Support StillUp
                </Link>
              )}
           </div>

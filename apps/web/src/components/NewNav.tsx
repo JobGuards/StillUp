@@ -28,8 +28,8 @@ export function NewNav({ userEmail }: Props) {
         <Link className="px-5 py-2 rounded-full text-sm font-bold text-muted-foreground hover:text-foreground hover:bg-foreground/[0.05] transition-all duration-300 tracking-widest uppercase text-[10px]" href="/docs">
           Docs
         </Link>
-        <Link className="px-5 py-2 rounded-full text-sm font-bold text-muted-foreground hover:text-foreground hover:bg-foreground/[0.05] transition-all duration-300 tracking-widest uppercase text-[10px]" href="/pricing">
-          Cloud
+        <Link className="px-5 py-2 rounded-full text-sm font-bold text-muted-foreground hover:text-foreground hover:bg-foreground/[0.05] transition-all duration-300 tracking-widest uppercase text-[10px]" href="https://github.com/StillUp/StillUp/discussions" target="_blank">
+          Community
         </Link>
       </nav>
 
@@ -51,7 +51,7 @@ export function NewNav({ userEmail }: Props) {
             
             {isProfileOpen && (
               <div className="absolute right-0 mt-4 p-4 glass-panel rounded-2xl border border-outline-variant/30 flex flex-col items-end min-w-[240px] shadow-2xl z-50 bg-background/90 backdrop-blur-xl">
-                <span className="text-muted-foreground text-[10px] font-bold opacity-60 uppercase tracking-widest mb-2">Verified Sentinel</span>
+                <span className="text-muted-foreground text-[10px] font-bold opacity-60 uppercase tracking-widest mb-2">Local Sovereign</span>
                 <span className="text-foreground text-sm font-bold mb-4">{userEmail}</span>
                 <Link href="/dashboard" className="w-full text-center bg-acid-lime/10 hover:bg-acid-lime/20 text-acid-lime font-bold tracking-widest uppercase text-[10px] py-3 rounded-xl border border-acid-lime/20 transition-colors">
                   Open Hub

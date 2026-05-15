@@ -28,6 +28,7 @@ export function DocLayout({ children, title, subtitle, category }: DocLayoutProp
     {
       group: 'Infrastructure',
       items: [
+        { title: 'Self-Hosted Guide', href: '/docs/self-hosting', icon: <Zap className="w-4 h-4" /> },
         { title: 'Tunnel Monitoring', href: '/docs/tunnel-monitoring', icon: <Lock className="w-4 h-4" /> },
         { title: 'Security Sentinel', href: '/docs/security-sentinel', icon: <ShieldAlert className="w-4 h-4" /> },
         { title: 'ReplayGuard SDK', href: '/docs/replay-guard', icon: <ShieldCheck className="w-4 h-4" /> },
