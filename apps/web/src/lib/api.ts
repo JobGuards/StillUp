@@ -164,6 +164,14 @@ class ApiClient {
       method: 'DELETE',
     })
   }
+
+  // Public methods
+  async submitInterest(data: { email: string; name?: string; source?: string }): Promise<any> {
+    return this.fetch('/public/interest', {
+      method: 'POST',
+      body: JSON.stringify(data),
+    })
+  }
 }
 
 export const api = new ApiClient()

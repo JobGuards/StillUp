@@ -41,4 +41,32 @@ router.get('/status/:slug', async (req: Request, res: Response) => {
   }
 })
 
+/**
+ * POST /api/public/interest
+ * Handles interest submission for the Cloud Pro version
+ */
+router.post('/interest', async (req: Request, res: Response) => {
+  try {
+    const { email, name, source } = req.body
+
+    if (!email || !email.includes('@')) {
+      res.status(400).json({ error: 'Valid email is required' })
+      return
+    }
+
+    const interest = await (prisma as any).cloudInterest.create({
+      data: {
+        email,
+        name,
+        source: source || 'pricing_page'
+      }
+    })
+
+    res.status(201).json({ message: 'Interest recorded successfully', id: interest.id })
+  } catch (error) {
+    console.error('Interest submission error:', error)
+    res.status(500).json({ error: 'Internal server error' })
+  }
+})
+
 export default router

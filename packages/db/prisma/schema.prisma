@@ -422,3 +422,18 @@ model GuardRollback {
 
   @@index([executionId])
 }
+
+// =============================================================================
+// 13. CLOUD INTEREST
+// =============================================================================
+
+model CloudInterest {
+  id        String   @id @default(cuid())
+  email     String
+  name      String?
+  source    String?  @default("pricing_page")
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([email])
+}
