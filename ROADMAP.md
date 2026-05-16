@@ -43,7 +43,7 @@ StillUp provides the "Safety Primitives" that prevent autonomous agents and back
 
 ---
 
-## 🟠 Phase 4: Sovereign Infrastructure (Self-Hoster Ready) - IN PROGRESS
+## 🟢 Phase 4: Sovereign Infrastructure (Self-Hoster Ready) - COMPLETED
 *Optimizing for privacy-first, local-only, and consumer-hardware deployments.*
 
 - [x] **Homelab Use-Case Suite**: Dedicated documentation for Home Assistant, Media Scraping, and Local AI.
@@ -55,13 +55,13 @@ StillUp provides the "Safety Primitives" that prevent autonomous agents and back
 
 ---
 
-## 🟣 Phase 5: Autonomous Sentinel Hub (Future)
+## 🟢 Phase 5: Autonomous Sentinel Hub (COMPLETED)
 *The centralized control plane for autonomous reliability.*
 
-- [ ] **Memory-Aware Status Pages**: Public pages that show not just "Up/Down", but "Retry Safety" and "Rollback Health."
-- [ ] **AI-Driven Pattern Discovery**: Automatically identifying "Cascading Failures" where one job retry breaks another.
-- [ ] **Global Sentinel Tunnels**: Multi-region secure tunnels to monitor latency and handshake health globally.
-- [ ] **Self-Healing Webhooks**: Automatic resolution of "Silent Failures" by re-triggering jobs through ReplayGuard.
+- [x] **Memory-Aware Status Pages**: Public pages that show not just "Up/Down", but "Retry Safety" and "Rollback Health."
+- [x] **AI-Driven Pattern Discovery**: Automatically identifying "Cascading Failures" where one job retry breaks another.
+- [x] **Global Sentinel Tunnels**: Multi-region secure tunnels to monitor latency and handshake health globally.
+- [x] **Self-Healing Webhooks**: Automatic resolution of "Silent Failures" by re-triggering jobs through ReplayGuard.
 
 ---
 
@@ -78,4 +78,5 @@ StillUp provides the "Safety Primitives" that prevent autonomous agents and back
 | Rollback Engine | Infrastructure Memory | ✅ COMPLETED |
 | Operational Memory | Infrastructure Memory | ✅ COMPLETED |
 | Tunnelight Engine | Telemetry | ✅ COMPLETED |
-| Sovereign Infrastructure | Self-Hosting | 🚧 IN PROGRESS |
+| Sovereign Infrastructure | Self-Hosting | ✅ COMPLETED |
+| Autonomous Sentinel Hub | Intelligence | ✅ COMPLETED |

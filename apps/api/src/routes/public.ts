@@ -24,6 +24,11 @@ router.get('/status/:slug', async (req: Request, res: Response) => {
             status: true,
             healthScore: true,
             lastHeartbeatAt: true,
+            incidents: {
+              where: { resolvedAt: null },
+              take: 5,
+              orderBy: { startedAt: 'desc' }
+            }
           }
         }
       }
@@ -34,7 +39,61 @@ router.get('/status/:slug', async (req: Request, res: Response) => {
       return
     }
 
-    res.json(project)
+    // Calculate Phase 5 Metrics
+    const [totalEffects, skippedEffects, totalRollbacks, successRollbacks] = await Promise.all([
+      (prisma as any).guardSideEffect.count({ where: { projectId: project.id } }),
+      (prisma as any).guardSideEffect.count({ where: { projectId: project.id, status: 'SKIPPED' } }),
+      (prisma as any).guardRollback.count({ 
+        where: { execution: { monitor: { projectId: project.id } } } 
+      }),
+      (prisma as any).guardRollback.count({ 
+        where: { 
+          execution: { monitor: { projectId: project.id } },
+          status: 'COMPLETED'
+        } 
+      })
+    ])
+
+    const retrySafety = totalEffects > 0 
+      ? Math.round((skippedEffects / totalEffects) * 100) 
+      : 100
+
+    const rollbackHealth = totalRollbacks > 0 
+      ? Math.round((successRollbacks / totalRollbacks) * 100) 
+      : 100
+
+    // Fetch regional status for each monitor (Phase 5)
+    const monitorsWithRegionalStatus = await Promise.all(
+      project.monitors.map(async (m: any) => {
+        const regionalHeartbeats = await (prisma as any).heartbeat.findMany({
+          where: { monitorId: m.id },
+          distinct: ['region'],
+          orderBy: { receivedAt: 'desc' },
+          select: { region: true, type: true, latency: true, receivedAt: true }
+        })
+
+        return {
+          ...m,
+          regionalStatus: regionalHeartbeats.reduce((acc: any, curr: any) => {
+            acc[curr.region || 'DEFAULT'] = {
+              status: curr.type === 'SUCCESS' ? 'UP' : 'DOWN',
+              latency: curr.latency,
+              lastSeen: curr.receivedAt
+            }
+            return acc
+          }, {})
+        }
+      })
+    )
+
+    res.json({
+      ...project,
+      monitors: monitorsWithRegionalStatus,
+      stats: {
+        retrySafety,
+        rollbackHealth,
+      }
+    })
   } catch (error) {
     console.error('Public status error:', error)
     res.status(500).json({ error: 'Internal server error' })

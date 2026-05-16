@@ -13,6 +13,7 @@ export class HeartbeatRepository {
     latency?: number
     handshakeAge?: number
     isLate?: boolean
+    region?: string
   }) {
     const { monitorId, type, isLate, ...rest } = data
 

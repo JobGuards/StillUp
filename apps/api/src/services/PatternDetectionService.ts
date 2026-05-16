@@ -1,5 +1,5 @@
 import { prisma } from '@stillup/db'
-import { subDays, format, startOfHour } from 'date-fns'
+import { subDays, format, startOfHour, subHours, differenceInMinutes } from 'date-fns'
 import { secretSentinelService } from './SecretSentinelService.js'
 
 function log(msg: string) {
@@ -7,10 +7,11 @@ function log(msg: string) {
 }
 
 export interface FailurePattern {
-  type: 'RECURRING_TIME' | 'FLAPPING' | 'LATENCY_SPIKE'
+  type: 'RECURRING_TIME' | 'FLAPPING' | 'LATENCY_SPIKE' | 'CASCADING' | 'STREAK'
   description: string
   occurrences: number
   lastSeen: Date
+  metadata?: any
 }
 
 export class PatternDetectionService {
@@ -148,6 +149,120 @@ export class PatternDetectionService {
       }
     } catch (err: any) {
       log(`DB Error: ${err.message}`);
+    }
+  }
+
+  /**
+   * Phase 5: Scans recent incidents to find cascading failure patterns.
+   * A cascading failure is defined as Monitor B failing shortly after Monitor A.
+   */
+  async discoverCascadingFailures(projectId: string): Promise<void> {
+    const yesterday = subHours(new Date(), 24)
+    const incidents = await (prisma as any).incident.findMany({
+      where: {
+        monitor: { projectId },
+        startedAt: { gte: yesterday },
+      },
+      orderBy: { startedAt: 'asc' },
+    })
+
+    if (incidents.length < 2) return
+
+    const patterns: Array<{ monitorA: string, monitorB: string, count: number }> = []
+
+    for (let i = 0; i < incidents.length - 1; i++) {
+      const incidentA = incidents[i]
+      for (let j = i + 1; j < incidents.length; j++) {
+        const incidentB = incidents[j]
+        if (incidentA.monitorId === incidentB.monitorId) continue
+        const diff = differenceInMinutes(new Date(incidentB.startedAt), new Date(incidentA.startedAt))
+        if (diff >= 0 && diff <= 10) {
+          const existing = patterns.find(p => p.monitorA === incidentA.monitorId && p.monitorB === incidentB.monitorId)
+          if (existing) existing.count++
+          else patterns.push({ monitorA: incidentA.monitorId, monitorB: incidentB.monitorId, count: 1 })
+        } else if (diff > 10) break
+      }
+    }
+
+    const strongPatterns = patterns.filter(p => p.count >= 2)
+
+    for (const pattern of strongPatterns) {
+      const monitorA = await (prisma as any).monitor.findUnique({ where: { id: pattern.monitorA }, select: { name: true } })
+      const monitorB = await (prisma as any).monitor.findUnique({ where: { id: pattern.monitorB }, select: { name: true } })
+
+      const description = `Monitor "${monitorB.name}" often fails shortly after "${monitorA.name}" (detected ${pattern.count} times).`
+      
+      const existing = await (prisma as any).failurePattern.findFirst({
+        where: {
+          monitorId: pattern.monitorB,
+          type: 'CASCADING',
+          metadata: {
+            path: ['path'],
+            equals: [pattern.monitorA, pattern.monitorB]
+          } as any,
+          active: true
+        }
+      })
+
+      if (existing) {
+        await (prisma as any).failurePattern.update({
+          where: { id: existing.id },
+          data: { occurrences: pattern.count, lastSeenAt: new Date(), description }
+        })
+      } else {
+        await (prisma as any).failurePattern.create({
+          data: {
+            monitorId: pattern.monitorB,
+            type: 'CASCADING',
+            description,
+            confidence: 0.8,
+            metadata: { 
+              monitorA: pattern.monitorA,
+              monitorA_name: monitorA.name,
+              count: pattern.count,
+              path: [pattern.monitorA, pattern.monitorB]
+            },
+            occurrences: pattern.count,
+            active: true
+          }
+        })
+      }
+    }
+  }
+
+  /**
+   * Phase 5: Detects "Recursive Retries" where a job is stuck in a loop.
+   */
+  async detectRecursiveRetries(projectId: string): Promise<void> {
+    const threeHoursAgo = subHours(new Date(), 3)
+    const highAttempts = await (prisma as any).guardExecution.findMany({
+      where: {
+        monitor: { projectId },
+        startedAt: { gte: threeHoursAgo },
+        attempt: { gte: 5 },
+        status: 'RUNNING'
+      },
+      include: { monitor: { select: { id: true, name: true } } }
+    })
+
+    for (const exec of highAttempts) {
+      // Check if we already flagged this execution
+      const existing = await (prisma as any).failurePattern.findFirst({
+        where: { monitorId: exec.monitor.id, type: 'STREAK', active: true }
+      })
+
+      if (!existing) {
+        await (prisma as any).failurePattern.create({
+          data: {
+            monitorId: exec.monitor.id,
+            type: 'STREAK',
+            description: `Monitor "${exec.monitor.name}" is experiencing excessive retries (Attempt #${exec.attempt}). Potential recursive failure detected.`,
+            confidence: 0.9,
+            metadata: { executionId: exec.id, attempt: exec.attempt },
+            active: true
+          }
+        })
+      }
     }
   }
 }

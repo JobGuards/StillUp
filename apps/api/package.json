@@ -21,6 +21,7 @@
     "@stillup/db": "workspace:*",
     "@stillup/shared": "workspace:*",
     "@types/cors": "^2.8.19",
+    "axios": "^1.16.1",
     "bcrypt": "^6.0.0",
     "cookie-parser": "^1.4.7",
     "cors": "^2.8.5",

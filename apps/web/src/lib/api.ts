@@ -114,12 +114,6 @@ class ApiClient {
   async getGuardedExecution(id: string): Promise<any> {
     return this.fetch<any>(`/guards/${id}`)
   }
-  
-  async getProjectSideEffects(params: { type?: string } = {}): Promise<any[]> {
-    const searchParams = new URLSearchParams()
-    if (params.type) searchParams.append('type', params.type)
-    return this.fetch<any[]>(`/guards/side-effects?${searchParams.toString()}`)
-  }
 
   // Project methods
   async upgradePlan(projectId: string, plan: string): Promise<any> {
@@ -162,22 +156,6 @@ class ApiClient {
   async deleteAlertChannel(id: string): Promise<void> {
     return this.fetch<void>(`/alert-channels/${id}`, {
       method: 'DELETE',
-    })
-  }
-
-  // Public methods
-  async createProject(name: string) {
-    const response: any = await this.fetch('/projects', {
-      method: 'POST',
-      body: JSON.stringify({ name })
-    })
-    return response.project
-  }
-
-  async submitInterest(data: { email: string; name?: string; source?: string }): Promise<any> {
-    return this.fetch('/public/interest', {
-      method: 'POST',
-      body: JSON.stringify(data),
     })
   }
 }

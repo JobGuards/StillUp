@@ -1,5 +1,6 @@
 import { prisma } from '@stillup/db'
 import { alertService } from './AlertService.js'
+import { selfHealingService } from './SelfHealingService.js'
 
 export class IncidentService {
   /**
@@ -31,6 +32,11 @@ export class IncidentService {
     // Trigger alerting
     alertService.sendIncidentAlert(incident).catch(err => {
       console.error('[IncidentService] Failed to send incident alert:', err)
+    })
+
+    // Phase 5: Trigger self-healing
+    selfHealingService.attemptHeal(monitorId, incident.id).catch(err => {
+      console.error('[IncidentService] Self-healing attempt failed:', err)
     })
 
     return incident

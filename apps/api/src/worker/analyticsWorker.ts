@@ -31,10 +31,10 @@ export async function runAnalyticsAggregation(): Promise<void> {
       isDbConnected = true
     }
 
+    // 2. Refresh intelligence metrics (Health Score & Patterns) per monitor
     for (const monitor of monitors) {
       await aggregateDailySummary(monitor.id, dayStart)
       
-      // Refresh intelligence metrics (Health Score & Patterns)
       await healthScoreService.calculateAndUpdate(monitor.id).catch(e => 
         console.error(`[AnalyticsWorker] Health score failed for ${monitor.id}:`, e.message)
       )
@@ -43,7 +43,21 @@ export async function runAnalyticsAggregation(): Promise<void> {
       )
     }
 
-    // Weekly summary every Monday
+    // 3. Project-Level Intelligence (Phase 5)
+    const projects = await (prisma as any).project.findMany({
+      select: { id: true, name: true }
+    })
+    console.log(`[AnalyticsWorker] Running project-level discovery for ${projects.length} projects`)
+    for (const project of projects) {
+      await patternDetectionService.discoverCascadingFailures(project.id).catch(e =>
+        console.error(`[AnalyticsWorker] Cascading discovery failed for ${project.name}:`, e.message)
+      )
+      await patternDetectionService.detectRecursiveRetries(project.id).catch(e =>
+        console.error(`[AnalyticsWorker] Recursive detection failed for ${project.name}:`, e.message)
+      )
+    }
+
+    // 4. Weekly summary every Monday
     if (yesterday.getDay() === 0) {
       const weekStart = startOfWeek(yesterday, { weekStartsOn: 1 })
       for (const monitor of monitors) {

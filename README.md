@@ -25,6 +25,9 @@ StillUp provides the "Safety Primitives" needed for high-stakes autonomous syste
 - 🛠️ **Automated Rollbacks**: Register compensation hooks (`onRollback`) that trigger automatically when jobs fail, ensuring state consistency across complex autonomous runs.
 - 🌐 **Webhook Sentinel**: Centralized visibility for all outbound communications, ensuring idempotency and security for your integration layer.
 - 🎨 **Sentinel Hub**: A premium, glassmorphic command center to visualize your "Execution Memory" and homelab health.
+- 🧠 **Autonomous Sentinel Hub (Phase 5)**: AI-driven pattern discovery for cascading failures and recursive retry loops.
+- 🌍 **Global Monitoring**: Multi-region heartbeat tunnels to track latency and handshake health across the globe.
+- ⚡ **Self-Healing Webhooks**: Automatically trigger recovery workflows (ReplayGuard™) based on autonomous failover policies.
 
 ## 💻 StillUp CLI (Local-First)
 

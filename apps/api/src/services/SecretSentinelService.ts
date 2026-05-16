@@ -77,8 +77,18 @@ export class SecretSentinelService {
    * Run a global scan and update FailurePatterns for security monitoring
    */
   async runSecurityAudit(projectId: string): Promise<void> {
-    const risks = await this.scanProject(projectId)
-    log(`Audit finished for ${projectId}. Risks found: ${risks.length}`);
+    const allRisks = await this.scanProject(projectId)
+    // Deduplicate risks by type and target secret
+    const uniqueRisksMap = new Map<string, SecretRisk>()
+    for (const r of allRisks) {
+      const key = `${r.type}:${r.secretName}`
+      if (!uniqueRisksMap.has(key)) {
+        uniqueRisksMap.set(key, r)
+      }
+    }
+    const risks = Array.from(uniqueRisksMap.values())
+
+    log(`Audit finished for ${projectId}. Unique risks found: ${risks.length}`);
     
     // First, clear old security risks for this project
     // We'll use a special 'monitorId' or a generic project-level monitor for security audits
@@ -94,19 +104,35 @@ export class SecretSentinelService {
       })
 
       if (lastSe?.execution?.monitorId) {
-        await (prisma as any).failurePattern.create({
-          data: {
-            monitorId: lastSe.execution.monitorId,
+        const monitorId = lastSe.execution.monitorId
+        const existing = await (prisma as any).failurePattern.findFirst({
+          where: {
+            monitorId,
             type: 'SECRET_RISK',
-            description: `[SECURITY] ${risk.description}`,
-            confidence: 1.0,
-            active: true,
-            metadata: { 
-              riskType: risk.type,
-              expiryDate: risk.expiryDate 
-            }
+            metadata: {
+              path: ['path'],
+              equals: risk.secretName
+            } as any,
+            active: true
           }
         })
+
+        if (!existing) {
+          await (prisma as any).failurePattern.create({
+            data: {
+              monitorId,
+              type: 'SECRET_RISK',
+              description: `[SECURITY] ${risk.description}`,
+              confidence: 1.0,
+              active: true,
+              metadata: { 
+                riskType: risk.type,
+                expiryDate: risk.expiryDate,
+                path: risk.secretName // Added for deduplication
+              }
+            }
+          })
+        }
       }
     }
   }

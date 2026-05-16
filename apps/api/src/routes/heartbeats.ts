@@ -29,6 +29,7 @@ const handleHeartbeat = async (req: any, res: any) => {
     let output: string | undefined
     let latency: number | undefined
     let handshakeAge: number | undefined
+    let region: string | undefined = req.query?.region as string
 
     if (req.method === 'POST') {
       type = req.body?.type === 'FAILURE' ? 'FAILURE' : 'SUCCESS'
@@ -37,6 +38,7 @@ const handleHeartbeat = async (req: any, res: any) => {
       output = req.body?.output
       latency = req.body?.latency
       handshakeAge = req.body?.handshakeAge
+      region = req.body?.region || region
 
       // 📡 Ghost Connection Detection (for Secure Tunnel Telemetry)
       if (monitor.type === 'TUNNEL' && handshakeAge !== undefined) {
@@ -61,6 +63,7 @@ const handleHeartbeat = async (req: any, res: any) => {
       latency,
       handshakeAge,
       isLate: !!isLate,
+      region
     })
 
     // 2. Incident Management

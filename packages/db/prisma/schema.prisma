@@ -173,7 +173,9 @@ model Monitor {
   heartbeatToken   String        @unique
   enabled          Boolean       @default(true)
   publicVisibility Boolean       @default(false)
-  retryPolicy      Json?         // { maxAttempts: 3, backoffMs: 1000, multiplier: 2 }
+  regions          String[]      @default(["US-EAST"])
+  selfHealing      Json?         // { "enabled": true, "maxRetries": 3, "cooldown": 300 }
+  retryPolicy      Json?         // Phase 3: Added for rollback-aware execution
 
   lastHeartbeatAt DateTime?
   nextExpectedAt  DateTime?
@@ -222,6 +224,7 @@ model Heartbeat {
   latency         Int?          // ms (for Tunnelight ping monitoring)
   handshakeAge    Int?          // seconds (for WireGuard/VPN handshake freshness)
   isLate          Boolean       @default(false)
+  region          String?       // The region where this heartbeat originated
 
   receivedAt     DateTime      @default(now())
   deletedAt      DateTime?
@@ -423,17 +426,11 @@ model GuardRollback {
   @@index([executionId])
 }
 
-// =============================================================================
-// 13. CLOUD INTEREST
-// =============================================================================
-
 model CloudInterest {
   id        String   @id @default(cuid())
   email     String
   name      String?
-  source    String?  @default("pricing_page")
+  source    String   @default("pricing_page")
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
-
-  @@index([email])
 }

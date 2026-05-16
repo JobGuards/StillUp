@@ -103,7 +103,7 @@ router.get('/project/overview', unifiedAuth, projectAccessMiddleware(), async (r
         },
         failurePatterns: {
           where: { active: true },
-          select: { type: true, description: true, confidence: true },
+          select: { type: true, description: true, confidence: true, lastSeenAt: true, createdAt: true },
         },
         heartbeats: {
           take: 50,
