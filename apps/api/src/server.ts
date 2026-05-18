@@ -1,6 +1,8 @@
 import express from "express";
 import cors from "cors";
 import dotenv from "dotenv";
+import { fileURLToPath } from "url";
+import { dirname, resolve } from "path";
 import cookieParser from "cookie-parser";
 import helmet from "helmet";
 import { requestLogger } from "./middleware/requestLogger.js";
@@ -22,7 +24,10 @@ import { prisma } from "@stillup/db";
 import { auditService } from "./services/AuditService.js";
 import * as Sentry from "@sentry/node";
 
-dotenv.config();
+// Load .env from monorepo root regardless of CWD
+const __filename = fileURLToPath(import.meta.url);
+const __rootDir = resolve(dirname(__filename), "../../..");
+dotenv.config({ path: resolve(__rootDir, ".env") });
 
 export function createApp() {
   const app = express();
