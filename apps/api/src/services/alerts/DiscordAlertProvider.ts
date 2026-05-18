@@ -7,15 +7,29 @@ export class DiscordAlertProvider implements AlertProvider {
     if (!webhookUrl) throw new Error('Discord webhookUrl is missing')
 
     const isResolution = data.type === 'resolution'
-    const statusText = isResolution ? 'RECOVERED' : 'DOWN'
-    const color = isResolution ? 0xd9ff00 : 0xff4444 // Hex as integer
-    const emoji = isResolution ? '✅' : '🚨'
+    const isEmergency = data.type === 'emergency'
+    
+    let statusText = 'DOWN'
+    let color = 0xff4444 // Hex as integer
+    let emoji = '🚨'
+
+    if (isResolution) {
+      statusText = 'RECOVERED'
+      color = 0xd9ff00
+      emoji = '✅'
+    } else if (isEmergency) {
+      statusText = 'EMERGENCY: CIRCUIT BREAKER TRIPPED'
+      color = 0xff0055
+      emoji = '🔥'
+    }
 
     const payload = {
       username: 'StillUp Alert',
       embeds: [
         {
-          title: `${emoji} Monitor ${statusText}: ${data.monitor.name}`,
+          title: isEmergency 
+            ? `${emoji} ${statusText}`
+            : `${emoji} Monitor ${statusText}: ${data.monitor.name}`,
           color: color,
           fields: [
             {
@@ -30,7 +44,7 @@ export class DiscordAlertProvider implements AlertProvider {
             },
             ...(data.durationText ? [
               {
-                name: 'Downtime',
+                name: isEmergency ? 'Details' : 'Downtime',
                 value: data.durationText,
                 inline: true,
               }

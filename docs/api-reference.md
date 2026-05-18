@@ -75,7 +75,40 @@ Returns the last 24 hours of heartbeat status for grid visualization.
 
 ### Initialize Session
 `POST /api/guards/session`
-Starts a new idempotent job execution.
+
+Starts a new idempotent job execution. If the monitor's circuit breaker is tripped due to excessive recursive retries, this returns an HTTP `429` error.
+
+**Headers:**
+- `X-API-Key`: Your project API Key.
+
+**Body:**
+```json
+{
+  "monitorId": "mon_123",
+  "externalId": "job_abc_123"
+}
+```
+
+**Response (Success - 200):**
+```json
+{
+  "executionId": "exec_456",
+  "attempt": 1,
+  "token": "exec_456.jwt_signature",
+  "retryPolicy": {
+    "enabled": true,
+    "maxAttempts": 3
+  }
+}
+```
+
+**Response (Circuit Breaker Tripped - 429):**
+```json
+{
+  "error": "Circuit Breaker Tripped: Excessive recursive retries detected (Attempt #5). Executions for this monitor are temporarily blocked to prevent infinite loops.",
+  "code": "CIRCUIT_BREAKER_TRIPPED"
+}
+```
 
 ### Verify Side Effect
 `POST /api/guards/verify`

@@ -1,7 +1,7 @@
 export interface AlertData {
   incident: any;
   monitor: any;
-  type: 'creation' | 'resolution';
+  type: 'creation' | 'resolution' | 'emergency';
   durationText?: string;
 }
 

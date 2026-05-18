@@ -30,8 +30,11 @@ router.post("/session", apiKeyMiddleware, async (req, res) => {
       token: `${execution.id}.${signature}`,
       retryPolicy: (execution as any).retryPolicy
     });
-  } catch (error) {
-    console.error("[Guards] Session initialization error:", error);
+  } catch (error: any) {
+    console.error("[Guards] Session initialization error:", error.message || error);
+    if (error.message && error.message.includes("Circuit Breaker Tripped")) {
+      return res.status(429).json({ error: error.message, code: "CIRCUIT_BREAKER_TRIPPED" });
+    }
     res.status(500).json({ error: "Failed to initialize session" });
   }
 });

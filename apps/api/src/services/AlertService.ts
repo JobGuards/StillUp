@@ -69,6 +69,36 @@ export class AlertService {
   }
 
   /**
+   * Send alerts for a critical system emergency (e.g. infinite loop blocked)
+   */
+  async sendEmergencyAlert(projectId: string, monitorId: string, alertType: string, message: string) {
+    const monitor = await (prisma.monitor as any).findUnique({
+      where: { id: monitorId },
+    })
+
+    if (!monitor) return
+
+    // Create a mock incident so standard alert delivery pipeline works
+    const mockIncident = {
+      id: 'emergency-alert',
+      monitorId,
+      type: 'emergency',
+      startedAt: new Date(),
+      resolutionNotes: message
+    }
+
+    const channels = await this.getEnabledChannels(projectId)
+    for (const channel of channels) {
+      await this.sendToChannel(channel, {
+        monitor,
+        incident: mockIncident,
+        type: 'emergency',
+        durationText: message
+      })
+    }
+  }
+
+  /**
    * Send alert to a specific channel
    */
   private async sendToChannel(channel: any, data: AlertData & { durationText?: string }) {

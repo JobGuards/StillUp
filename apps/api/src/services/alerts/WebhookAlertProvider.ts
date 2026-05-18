@@ -14,7 +14,11 @@ export class WebhookAlertProvider implements AlertProvider {
     }
 
     const payload = {
-      event: type === 'creation' ? 'incident.created' : 'incident.resolved',
+      event: type === 'emergency' 
+        ? 'incident.emergency'
+        : type === 'creation' 
+          ? 'incident.created' 
+          : 'incident.resolved',
       timestamp: new Date().toISOString(),
       monitor,
       incident,

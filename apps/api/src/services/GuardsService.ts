@@ -1,4 +1,5 @@
 import { PrismaClient } from "@prisma/client";
+import { alertService } from "./AlertService.js";
 
 const prisma = new PrismaClient();
 
@@ -20,6 +21,31 @@ export class GuardsService {
       throw new Error("Unauthorized: Monitor does not belong to this project");
     }
 
+    // 1. Check if the circuit breaker is already tripped (active STREAK pattern within 60 min cooldown)
+    const activeStreak = await prisma.failurePattern.findFirst({
+      where: {
+        monitorId,
+        type: 'STREAK',
+        active: true
+      }
+    });
+
+    if (activeStreak) {
+      const lastSeen = new Date(activeStreak.lastSeenAt || activeStreak.createdAt);
+      const minutesSinceStreak = (Date.now() - lastSeen.getTime()) / 60000;
+      const cooldownMinutes = 60; // 1 hour cooldown default
+      
+      if (minutesSinceStreak < cooldownMinutes) {
+        throw new Error(`Circuit Breaker Tripped: Excessive recursive retries detected for this monitor. New executions are temporarily blocked to prevent infinite loops. Cooldown active for another ${Math.ceil(cooldownMinutes - minutesSinceStreak)} minutes.`);
+      } else {
+        // Cooldown passed, auto-deactivate the streak pattern
+        await prisma.failurePattern.update({
+          where: { id: activeStreak.id },
+          data: { active: false }
+        });
+      }
+    }
+
     let attempt = 1;
     if (externalId) {
       const lastExecution = await prisma.guardExecution.findFirst({
@@ -29,6 +55,42 @@ export class GuardsService {
       if (lastExecution) {
         attempt = lastExecution.attempt + 1;
       }
+    }
+
+    // 2. Real-time STREAK detection (trip circuit breaker if attempt >= 5)
+    if (attempt >= 5) {
+      const existingStreak = await prisma.failurePattern.findFirst({
+        where: { monitorId, type: 'STREAK', active: true }
+      });
+
+      if (!existingStreak) {
+        await prisma.failurePattern.create({
+          data: {
+            monitorId,
+            type: 'STREAK',
+            description: `Monitor "${monitor.name}" is experiencing excessive retries (Attempt #${attempt}). Potential recursive failure detected.`,
+            confidence: 0.9,
+            metadata: { attempt, externalId },
+            active: true,
+            lastSeenAt: new Date()
+          }
+        });
+
+        // Trigger the Emergency Alert immediately
+        await alertService.sendEmergencyAlert(
+          projectId,
+          monitorId,
+          'RETRY_LOOP_DETECTED',
+          `🚨 EMERGENCY: Infinite Retry Loop Blocked!\n\nMonitor "${monitor.name}" was caught in an active retry loop at Attempt #${attempt} for Job ID "${externalId}".\n\nStillUp has automatically tripped the circuit breaker and blocked all new executions for this monitor to protect downstream infrastructure.`
+        ).catch(err => console.error("Failed to send emergency alert:", err));
+      } else {
+        await prisma.failurePattern.update({
+          where: { id: existingStreak.id },
+          data: { lastSeenAt: new Date() }
+        });
+      }
+
+      throw new Error(`Circuit Breaker Tripped: Excessive recursive retries detected (Attempt #${attempt}). Executions for this monitor are temporarily blocked to prevent infinite loops.`);
     }
 
     const execution = await prisma.guardExecution.create({

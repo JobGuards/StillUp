@@ -7,9 +7,21 @@ export class SlackAlertProvider implements AlertProvider {
     if (!webhookUrl) throw new Error('Slack webhookUrl is missing')
 
     const isResolution = data.type === 'resolution'
-    const statusText = isResolution ? 'RECOVERED' : 'DOWN'
-    const color = isResolution ? '#d9ff00' : '#ff4444'
-    const emoji = isResolution ? '✅' : '🚨'
+    const isEmergency = data.type === 'emergency'
+    
+    let statusText = 'DOWN'
+    let color = '#ff4444'
+    let emoji = '🚨'
+
+    if (isResolution) {
+      statusText = 'RECOVERED'
+      color = '#d9ff00'
+      emoji = '✅'
+    } else if (isEmergency) {
+      statusText = 'EMERGENCY: CIRCUIT BREAKER TRIPPED'
+      color = '#ff0055'
+      emoji = '🔥'
+    }
 
     const payload = {
       blocks: [
@@ -17,7 +29,9 @@ export class SlackAlertProvider implements AlertProvider {
           type: 'section',
           text: {
             type: 'mrkdwn',
-            text: `${emoji} *Monitor ${statusText}: ${data.monitor.name}*`,
+            text: isEmergency 
+              ? `${emoji} *${statusText}*`
+              : `${emoji} *Monitor ${statusText}: ${data.monitor.name}*`,
           },
         },
         {
@@ -34,7 +48,9 @@ export class SlackAlertProvider implements AlertProvider {
             ...(data.durationText ? [
               {
                 type: 'mrkdwn',
-                text: `*Downtime:*\n${data.durationText}`,
+                text: isEmergency
+                  ? `*Details:*\n${data.durationText}`
+                  : `*Downtime:*\n${data.durationText}`,
               }
             ] : []),
           ],
